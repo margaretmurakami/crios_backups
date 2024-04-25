@@ -28,7 +28,7 @@ def get_aste_tracer(fldin,nfx,nfy):
         #print('fix 2d')
         fldin=fldin[np.newaxis, :, :]
     #defining a big face:
-    a=np.zeros((nz,nfy[0]+nx+nfx[3],2*nx))       #(50,900,270)
+    a = np.full((nz, nfy[0]+nx+nfx[3], 2*nx), np.nan)
     #print(np.shape(a))
     
     #face1
@@ -76,7 +76,8 @@ def aste_faces2compact(fld,nfx,nfy):
     nz=sz[0]
     nx=sz[-1]
 
-    fldo=np.zeros((nz,2*nfy[0]+nx+nfx[3],nx))
+    fldo = np.full((nz, 2 * nfy[0] + nx + nfx[3], nx), np.nan)
+
     if nz == 1:
         fld.f1=fld.f1[np.newaxis, :, :]
     fldo[:,0:nfy[0],:]=fld.f1
