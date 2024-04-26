@@ -146,7 +146,7 @@ def plot_aste_faces(fld,nfx,nfy,klev,climit,step):
 def aste_tracer2compact(fld, nfx, nfy):
     # check and fix if 2D
     sz=np.shape(fld)
-    print("SZ!",sz)
+    #print("SZ!",sz)
     sz=np.array(sz)
     #if(len(sz)<3):
     #   sz=np.append(1,sz)
@@ -159,7 +159,7 @@ def aste_tracer2compact(fld, nfx, nfy):
         
     nz=sz[0]
     nx=sz[-1]
-    print("shape of fld:", fld.shape)
+    print("shape of tracer fld:", fld.shape)
     
     nx = nfx[2]
     tmp1 = fld[:,:nfy[0],nx:]
@@ -171,7 +171,7 @@ def aste_tracer2compact(fld, nfx, nfy):
     tmp3 = list(zip(*tmp3))[::-1]
     tmp3 = np.asarray(tmp3)
     tmp3 = np.transpose(tmp3,[2,0,1])
-    print(tmp3.shape)
+    #print(tmp3.shape)
     # plt.pcolormesh(tmp3[0,:,:])
     
     # cw rotation
@@ -180,7 +180,7 @@ def aste_tracer2compact(fld, nfx, nfy):
     tmp4 = list(zip(*tmp4))[::-1]
     tmp4 = np.asarray(tmp4)
     tmp4 = np.transpose(tmp4,[2,0,1])
-    print(tmp4.shape)
+    #print(tmp4.shape)
     # plt.pcolormesh(tmp4[0,:,:])
     
     # ccw rotation
@@ -189,7 +189,7 @@ def aste_tracer2compact(fld, nfx, nfy):
     tmp5 = list(zip(*tmp5[::-1]))
     tmp5 = np.asarray(tmp5)
     tmp5 = np.transpose(tmp5,[2,0,1])
-    print(tmp5.shape)
+    #print(tmp5.shape)
     # plt.pcolormesh(tmp5[0,:,:])
     # we now have 5 separate faces
 
