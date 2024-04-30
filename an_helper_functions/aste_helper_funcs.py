@@ -328,13 +328,3 @@ def get_aste_vector(U,V,nfx,nfy,sign_switch):
     Vnew = vq
 
     return Unew,Vnew
-
-def is_leap(year):
-    # determine if a year is a leap year
-    if year%100 == 0:
-        if year%400 != 0:
-            return False
-        else:
-            return True
-    if year%4 == 0:
-        return True
