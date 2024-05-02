@@ -38,6 +38,13 @@ def get_fnames(dt,startyr,endyr):
         endyr: ending year from the model run
     outputs:
         fnames: filenames from the model run
+
+
+    Example:
+        dt = 600
+        startyr = 2002
+        endyr = 2019
+        fnames = get_fnames(dt,startyr,endyr)
     '''
     days_reg = np.array([31,28,31,30,31,30,31,31,30,31,30,31])
     days_leap = np.array([31,29,31,30,31,30,31,31,30,31,30,31])
@@ -66,6 +73,18 @@ def get_tsteps(times,fnames,dt,startyr,startmo,startdy):
 
     outputs:
         tsstr: the tsstr of the filenames we want
+
+    Example:
+        dt = 600
+        startyr = 2002
+        endyr = 2019
+        fnames = get_fnames(dt,startyr,endyr)
+        
+        times = {}
+        times["2014"] = np.arange(1,13,1)
+        times["2015"] = np.array([1])
+        
+        tsstr,datetimes = get_tsteps(times,fnames,dt,startyr,1,1)
     '''
     tsstr = np.array([])
     datetimes = np.array([])
