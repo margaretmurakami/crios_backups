@@ -33,9 +33,10 @@ def bin_array(arr, bin_edges):
     return bin_indices_3d-1
 
 # lets make this into a loop if we can difference in time, we can divide by dT and dS at the end
-def create_mesh(ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
+def create_mesh(snap,ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
     '''
     Inputs:
+        snap: +1 or -1 in accordance with mitgcm text, + is time-averaged, - is a snap set
         ds: dataset with values we want, salinity, temperature
         nS: binsSLT_edges.shape[0]-1
         nT: binsTH_edges.shape[0]-1
@@ -45,12 +46,53 @@ def create_mesh(ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
 
     Outputs:
         testmesh: mesh of shape times,nS,nT,npoints of the binned attribute values at each time step
+            this is in units of attr/deg C/PSU
     '''
+    if snap < 0:
+        testmesh = np.zeros((len(ds.iteration.values),nS, nT, npoints))     #ntimes x nS x nT x points in basin
+        times = ds.iteration.values
 
-    testmesh = np.zeros((len(ds.iteration.values),nS, nT, npoints))     #ntimes x nS x nT x points in basin
-
-    tn = 0
-    for t in ds.iteration.values:
+        tn = 0
+        for t in ds.iteration.values:
+            dsx = ds.sel(iteration = t)
+            if len(dsx[attr].values.shape) == 3:
+                # 3D, bin in 3D
+                thisvol = dsx[attr].values[:,mskBasin == iB]                 # all depths, mskBasin points 
+                thissalt = dsx.salinity_binned.values[:,mskBasin == iB]
+                thistemp = dsx.theta_binned.values[:,mskBasin == iB]
+            elif len(dsx[attr].values.shape) == 2:
+                # 2D field, only use top layer of binned salt and temp
+                thisvol = dsx[attr].values[mskBasin == iB]                    # these should just be at the surface
+                thissalt = dsx.salinity_binned.values[0,mskBasin == iB]       # these should just be at the surface
+                thistemp = dsx.theta_binned.values[0,mskBasin == iB ]         # these should just be at the surface
+    
+            # trim the fat (nan values)
+            thisvol = np.where(np.isnan(thisvol), 0, thisvol)
+            thissalt = np.where(np.isnan(thissalt), -1, thissalt)  # Replace NaN with -1
+            thistemp = np.where(np.isnan(thistemp), -1, thistemp)  # as above, indexing should not matter because this should be 0 volume
+    
+            # create the mesh
+            meshx = np.zeros((nS, nT, npoints))
+        
+            saltflat = thissalt.flatten()
+            tempflat = thistemp.flatten()
+        
+            # create local timed mesh
+            np.add.at(meshx, (thissalt.astype(int), thistemp.astype(int), np.arange(0,npoints,1)), thisvol[...])  # this should work to add at bins
+            meshx /= dT   # m^3/deg C
+            meshx /= dS   # m^3/deg C/PSU
+        
+            # add to big mesh
+            testmesh[tn,:,:,:] = meshx
+        
+            # delete for memory
+            del meshx
+            
+            tn += 1
+    else:
+        testmesh = np.zeros((1,nS, nT, npoints))
+        t = ds.iteration.values[1]   # assuming there are only two iterations in the dataset
+        tn = 0
         dsx = ds.sel(iteration = t)
         if len(dsx[attr].values.shape) == 3:
             # 3D, bin in 3D
@@ -86,4 +128,6 @@ def create_mesh(ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
         del meshx
         
         tn += 1
+
+    
     return testmesh
