@@ -12,6 +12,16 @@ class structtype():
     pass
 
 def get_aste_tracer(fldin,nfx,nfy):
+    '''
+    Inputs:
+        fldin: data field in compact coords from mitgcm output (of shape from rdmds reshaped to ny,nx or nz,ny,nx)
+        nfx: number of x faces, nfx = np.array([nx, 0 , nx, ncut2 ,ncut1])
+        nfy: number of y faces, nfy = np.array([ncut1, 0 , nx, nx, nx])
+
+    outputs:
+        the input field reshaped into tracer form, plottable in xyz space
+
+    '''
     
     sz=np.shape(fldin)
     sz=np.array(sz)
@@ -67,6 +77,10 @@ def get_aste_tracer(fldin,nfx,nfy):
     return a
 
 def aste_faces2compact(fld,nfx,nfy):
+    '''
+    Reverse of get_aste_faces, taking an input field from tracer form to compact form
+    '''
+    
     #add a new dimension in case it's only 2d field:
     sz=np.shape(fld.f1)
     sz=np.array(sz)
@@ -96,6 +110,12 @@ def aste_faces2compact(fld,nfx,nfy):
     return fldo
 
 def get_aste_faces(fld,nfx,nfy):
+    '''
+    From big ASTE, get the data on the individual faces from the ASTE grid in case we want to observe individually
+    input fld (of shape from rdmds reshaped to ny,nx or nz,ny,nx)
+    '''
+
+    
     nx=nfx[0]
     print("nx",nx)
     
@@ -121,6 +141,7 @@ def get_aste_faces(fld,nfx,nfy):
 
 def plot_aste_faces(fld,nfx,nfy,klev,climit,step):
     '''
+    Plots faces 1-4 of the ASTE grid, 
     input
         fld: must be from rdmds do not edit or reshape this
     '''
@@ -144,6 +165,17 @@ def plot_aste_faces(fld,nfx,nfy,klev,climit,step):
     axs[1,1].title.set_text('fld face5')
 
 def aste_tracer2compact(fld, nfx, nfy):
+    '''
+    Reverse of get_aste_tracer function
+    Inputs:
+        fld: the field in tracer form [nx*2 nfy(1)+nfy(3)+nfx(4)+nfx(5),nz]
+        nfx: number of x faces
+        nfy: number of y faces
+
+    Outputs:
+        fldout: the original data field in compact form, useful for comparison with read binary files
+        Out: compact format [nz 1350 270]
+    '''
     # check and fix if 2D
     sz=np.shape(fld)
     #print("SZ!",sz)
@@ -328,3 +360,36 @@ def get_aste_vector(U,V,nfx,nfy,sign_switch):
     Vnew = vq
 
     return Unew,Vnew
+
+#create a function
+def read_aste_float32(filename,nx,ny,nnz):
+    with open(filename, 'rb') as f:
+        data = np.fromfile(f, dtype=np.dtype('>f'))
+        if nnz > 1:
+            fld = np.reshape(data,[nnz, ny, nx])   #elif:
+        else:
+            fld = np.reshape(data,[ny, nx])
+    return fld
+
+def read_aste_float64(filename,nx,ny,nnz):
+    with open(filename, 'rb') as f:
+        data = np.fromfile(f, dtype=np.dtype('>f8'))
+        if nnz > 1:
+            fld = np.reshape(data,[nnz, ny, nx])   #elif:
+        else:
+            fld = np.reshape(data,[ny, nx])
+    return fld
+
+def write_float32(fout,fld):
+    #del bytes
+    #fld=np.float32(fld)
+    with open(fout, 'wb') as file:
+        bytes = fld.tobytes()
+        file.write(bytes)
+        
+#create a function
+def read_float32(fileIn):
+    with open(fileIn, 'rb') as f:
+        data = np.fromfile(f, dtype=np.dtype('>f'))
+        print(np.shape(data))
+    return data
