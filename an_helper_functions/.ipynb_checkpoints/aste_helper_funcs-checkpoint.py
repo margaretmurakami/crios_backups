@@ -105,7 +105,7 @@ def aste_faces2compact(fld,nfx,nfy):
         fld.f5=fld.f5[np.newaxis, :, :]
     fldo[:,nfy[0]+nfy[2]+nfx[3]:nfy[0]+nfy[2]+nfx[3]+nfx[4],:]=np.reshape(fld.f5,[nz,nfx[4],nfy[4]])
 
-    print(fldo.shape)
+    #print(fldo.shape)
 
     return fldo
 
@@ -117,18 +117,18 @@ def get_aste_faces(fld,nfx,nfy):
 
     
     nx=nfx[0]
-    print("nx",nx)
+    #print("nx",nx)
     
     #check the klevel dimension, if 2d, add a third dim
     sz=np.shape(fld)
     sz=np.array(sz)
-    print("sz",sz)
+    #print("sz",sz)
     if(len(sz)<3):
         fld=np.copy(fld[np.newaxis,:,:])
-    print(fld.shape)
+    #print(fld.shape)
     
     tmp = fld[:,0:nfy[0],0:nx]
-    print("tmp",tmp.shape)
+    #print("tmp",tmp.shape)
     fldout = structtype()
     fldout.f1=fld[:,0:nfy[0],0:nx]                    #face 1
     #fldout = {}
@@ -148,7 +148,7 @@ def plot_aste_faces(fld,nfx,nfy,klev,climit,step):
     fldout=get_aste_faces(fld,nfx,nfy)
     nx=nfx[0]
     #step=(climit[1]-climit[0])/100
-    print(step)
+    #print(step)
     clevels = np.arange(climit[0], climit[1], step)
     fig,axs=plt.subplots(2,2)
     pcm=axs[0,0].contourf(fldout.f1[klev-1,:,:],levels=clevels, cmap='viridis')
@@ -186,12 +186,12 @@ def aste_tracer2compact(fld, nfx, nfy):
     #add a new dimension in case it's only 2d field:
     if(len(sz)<3):
         sz=np.append(1,sz)
-        print('fix 2d')
+        #print('fix 2d')
         fld=fld[np.newaxis, :, :]
         
     nz=sz[0]
     nx=sz[-1]
-    print("shape of tracer fld:", fld.shape)
+    #print("shape of tracer fld:", fld.shape)
     
     nx = nfx[2]
     tmp1 = fld[:,:nfy[0],nx:]
@@ -232,7 +232,7 @@ def aste_tracer2compact(fld, nfx, nfy):
     tmp_struct.f5 = tmp5
     
     compact = aste_faces2compact(tmp_struct,nfx,nfy)
-    print("compact shape",compact.shape)  # this is rdmds shape
+    #print("compact shape",compact.shape)  # this is rdmds shape
 
     return compact
 
