@@ -411,6 +411,23 @@ def get_aste_vector_face1_3(U,V,nfx,nfy,sign_switch):
     Unew[:,nfy[0]:nfy[0]+nx,nx:2*nx] = -tmpV
     Vnew[:,nfy[0]:nfy[0]+nx,nx:2*nx] = tmpU
 
+    # face 4 - rot 90 degrees ccw
+    # u -> new_v, -v -> new_u
+    tmpU=np.reshape(U[:,nfy[0]+nx:nfy[0]+nx+nfx[3],0:nx],[nz,nx,nfx[3]])    #(nz,270,180)
+    tmpU=np.transpose(tmpU, (1,2,0))
+    tmpU=list(zip(*tmpU[::-1]))
+    tmpU=np.asarray(tmpU)
+    tmpU=np.transpose(tmpU,[2,0,1])                                         #(nz,180,270)
+
+    tmpV=np.reshape(V[:,nfy[0]+nx:nfy[0]+nx+nfx[3],0:nx],[nz,nx,nfx[3]])    #(nz,270,180)
+    tmpV=np.transpose(tmpV, (1,2,0))
+    tmpV=list(zip(*tmpV[::-1]))
+    tmpV=np.asarray(tmpV)
+    tmpV=np.transpose(tmpV,[2,0,1])                                         #(nz,180,270)
+
+    Unew[:,nfy[0]+nx:nfy[0]+nx+nfx[3],nx:2*nx]=-tmpV
+    Vnew[:,nfy[0]+nx:nfy[0]+nx+nfx[3],nx:2*nx]= tmpU
+
     # swtich sign if needed
     if sign_switch:
         Unew = np.abs(Unew)
