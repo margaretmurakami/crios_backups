@@ -32,7 +32,7 @@ def bin_array(arr, bin_edges):
     
     return bin_indices_3d-1
 
-# lets make this into a loop if we can difference in time, we can divide by dT and dS at the end
+# create a TS mesh from a dataset, no longer use this function but I did in the beginning
 def create_mesh(snap,ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
     '''
     Inputs:
@@ -131,3 +131,51 @@ def create_mesh(snap,ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
 
     
     return testmesh
+
+def create_TS_mesh(tsstr,nS,nT,npoints, binned_salinity, binned_theta, attr,idxs):
+    '''
+    Inputs:
+        nS: binsSLT_edges.shape[0]-1
+        nT: binsTH_edges.shape[0]-1
+        binned_salinity: the array of shape nz, ny, nx of the indices of salinity in the salt bins
+        binned_theta: same as above but for theta
+        attr: the attribute we want to bin, ie advection, diffusion etc.
+        idxs: np.where(mymsk == iB) or whatever indices in mskBasin we are looking at
+
+    Outputs:
+        returns an nS by nT shaped array with the summed values within the attr (like volume)
+    '''
+    
+    mesh = np.zeros((len(tsstr),nS, nT, npoints))
+    tn = 0
+    for t in range(len(tsstr)):
+        if len(attr.shape) == 4:
+            # time x nz x ny x nx
+            thisvol = attr[t][:,idxs[0],idxs[1]]
+            thissalt = binned_salinity[t][:,idxs[0],idxs[1]]
+            thistemp = binned_theta[t][:,idxs[0],idxs[1]]
+        elif len(attr.shape) == 3:
+            # time x ny x nx
+            thisvol = attr[t][maskArc == iB]
+            thissalt = binned_salinity[t][idxs[0],idxs[1]]
+            thistemp = binned_theta[t][idxs[0],idxs[1]]
+            
+        # trim the nan values
+        thisvol = np.where(np.isnan(thisvol), 0, thisvol)
+        thissalt = np.where(np.isnan(thissalt), -1, thissalt)  # Replace NaN with -1
+        thistemp = np.where(np.isnan(thistemp), -1, thistemp)
+        
+        # create the mesh
+        meshx = np.zeros((nS,nT,npoints))
+        
+        # create local timed mesh
+        np.add.at(meshx, (thissalt.astype(int), thistemp.astype(int), np.arange(0,npoints,1)), thisvol[...])  # this should work to add at bins
+        meshx /= dT   # m^3/deg C
+        meshx /= dS   # m^3/deg C/PSU
+        
+        # add to big mesh
+        mesh[tn,:,:,:] = meshx
+        del meshx
+
+        tn += 1
+    return mesh
