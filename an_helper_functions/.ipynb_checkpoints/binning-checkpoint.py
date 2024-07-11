@@ -132,7 +132,7 @@ def create_mesh(snap,ds,nS,nT,npoints,attr,mskBasin,iB,dT,dS):
     
     return testmesh
 
-def create_TS_mesh(tsstr,nS,nT,npoints, binned_salinity, binned_theta, attr,idxs):
+def create_TS_mesh(tsstr,nS,nT,npoints, binned_salinity, binned_theta, attr,idxs,dT,dS):
     '''
     Inputs:
         nS: binsSLT_edges.shape[0]-1
@@ -156,7 +156,7 @@ def create_TS_mesh(tsstr,nS,nT,npoints, binned_salinity, binned_theta, attr,idxs
             thistemp = binned_theta[t][:,idxs[0],idxs[1]]
         elif len(attr.shape) == 3:
             # time x ny x nx
-            thisvol = attr[t][maskArc == iB]
+            thisvol = attr[t][idxs[0],idxs[1]]
             thissalt = binned_salinity[t][idxs[0],idxs[1]]
             thistemp = binned_theta[t][idxs[0],idxs[1]]
             
