@@ -179,3 +179,53 @@ def create_TS_mesh(tsstr,nS,nT,npoints, binned_salinity, binned_theta, attr,idxs
 
         tn += 1
     return mesh
+
+
+# function to create G vectors from tendency terms
+# to create Jx or Jy from this we just do d(G_S)/dT or d(G_T)/dS, respectively
+# create the mesh of vectors for GS and GT
+def calc_G_term(attr,binned_theta,binned_salinity,nT,nS,binwidthS,binwidthT):
+    '''
+    Creates the G_S and G_T terms provided either attr, the S tend, or attr, the T tend
+    
+    Inputs:
+        attr: for one time step, the tendency in terms of PSU.m^3/s or degC.m^3/s (shape nz,ny,nx)
+        binned_theta,binned_salinity: the indices of the salt and temp bins for each nz,ny,nx point at that tstep
+        nT, nS: number of cell centers
+        binwidthT, binwidthS: bin widths in T-S space for comparison
+
+    Outputs:
+        an array of shape nT, nS of the G term values for a given basin or set of basins
+    '''
+    # initialize the TS mesh
+    distr_attr = np.full((nT,nS),0.0)
+
+    # initialize tiles for binwidths
+    binwidthsS_tile = np.tile(binwidthS, (112, 1)).T
+    binwidthsT_tile = np.tile(binwidthT, (112, 1))
+
+    # get the indices where not nan so that we don't have to loop, hopefully faster
+    indices = np.where(~np.isnan(binned_theta))
+    if len(indices) == 2:
+        y,x = indices[0],indices[1]
+    else:
+        z,y,x = indices[0],indices[1],indices[2]
+
+    # loop over the z,y,x indices, grab the values from attr, and add them to the mesh
+    # 2D case (ie gate)
+    if len(indices) == 2:
+        for i,j in zip(y,x):
+            distr_attr[int(binned_salinity[i,j]),int(binned_theta[i,j])] += attr[i,j]
+
+    # 3D case (ie Basin)
+    elif len(indices) == 3:
+        for i,j,k in zip(z,y,x):
+            distr_attr[int(binned_salinity[i,j,k]),int(binned_theta[i,j,k])] += attr[i,j,k]    # degC.m^3/s OR PSU.m^3/s
+
+    # divide by binwidthsS and binwidthsT tiles
+    # heat tendency becomes Sv/PSU, salt tendency becomes Sv/degC
+    #distr_attr  = distr_attr/binwidthsT_tile[:,:]/binwidthsS_tile[:,:]    # m^3/s/PSU OR m^3/s/degC
+    distr_attr *= 1e-6                                                    # Sv/PSU or Sv/degC
+    distr_attr[distr_attr == 0 ] = np.nan
+
+    return distr_attr
