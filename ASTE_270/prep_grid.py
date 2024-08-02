@@ -58,7 +58,7 @@ save_budg_2d = 1
 save_budg_scalar = 0
 save_budg_lev = 0
 
-strbudg = 'Mass'
+#strbudg = 'Mass'
 kBudget = 1
 test3d = True
 plot_fig = 1
