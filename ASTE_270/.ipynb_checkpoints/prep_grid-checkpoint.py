@@ -83,7 +83,8 @@ myparms = {
     'diagsAreMonthly': 0,
     'diagsAreAnnual': 0,
     'recInAve': [1, 2],
-    'SaltPlumeHeatFlux': 0,  # Not sure what this is
+    'SaltPlumeHeatFlux': 0,
+    'SEAICEheatConsFix': 0,
     'conserveTr': 0
 }
 

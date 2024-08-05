@@ -460,6 +460,83 @@ def get_aste_vector_face1_3(U,V,nfx,nfy,sign_switch):
 
     return Unew,Vnew
 
+# this needs to be modified so that we do convergence at the borders of the faces
+def calc_UV_conv_mod(nfx,nfy,tmpUo,tmpVo):
+    '''
+    inputs:
+        nfx,nfy: shapes of the five faces
+        tmpUo: the U vector FACES from get_aste_faces
+        tmpVo: the V vector FACES from get_aste_faces
+    outputs:
+        convU_compact+convV_compact: the horizontal convergence of an attribute in compact form (nz,ny,nx)
+    '''
+
+    # face 1
+    tmpUo_p1 = structtype()
+    tmpUo_p1.f1 = np.full((tmpUo.f1.shape[0],tmpUo.f1.shape[1],tmpUo.f1.shape[2]+1),np.nan)
+    tmpUo_p1.f1[:,:,:nfx[0]] = tmpUo.f1
+    
+    tmpVo_p1 = structtype()
+    tmpVo_p1.f1 = np.full((tmpVo.f1.shape[0],tmpVo.f1.shape[1]+1,tmpVo.f1.shape[2]),np.nan)
+    tmpVo_p1.f1[:,:nfy[0],:] = tmpVo.f1
+
+    # face 3
+    tmpUo_p1.f3 = np.full((tmpUo.f3.shape[0],tmpUo.f3.shape[1],tmpUo.f3.shape[2]+1),np.nan)
+    tmpUo_p1.f3[:,:,:nfx[2]] = tmpUo.f3
+    
+    tmpVo_p1.f3 = np.full((tmpVo.f3.shape[0],tmpVo.f3.shape[1]+1,tmpVo.f3.shape[2]),np.nan)
+    tmpVo_p1.f3[:,:nfy[2],:] = tmpVo.f3
+
+    # face 4
+    tmpUo_p1.f4 = np.full((tmpUo.f4.shape[0],tmpUo.f4.shape[1],tmpUo.f4.shape[2]+1),np.nan)
+    tmpUo_p1.f4[:,:,:nfx[3]] = tmpUo.f4
+    
+    tmpVo_p1.f4 = np.full((tmpVo.f4.shape[0],tmpVo.f4.shape[1]+1,tmpVo.f4.shape[2]),np.nan)
+    tmpVo_p1.f4[:,:nfy[3],:] = tmpVo.f4
+
+    # face 5
+    tmpUo_p1.f5 = np.full((tmpUo.f5.shape[0],tmpUo.f5.shape[1],tmpUo.f5.shape[2]+1),np.nan)
+    tmpUo_p1.f5[:,:,:nfx[4]] = tmpUo.f5
+    
+    tmpVo_p1.f5 = np.full((tmpVo.f5.shape[0],tmpVo.f5.shape[1]+1,tmpVo.f5.shape[2]),np.nan)
+    tmpVo_p1.f5[:,:nfy[4],:] = tmpVo.f5
+
+
+    # do the convergence for each face here
+    convU = structtype()
+    convV = structtype()
+    
+    convU.f1 = np.full((tmpUo.f1.shape[0],tmpUo.f1.shape[1],tmpUo.f1.shape[2]),np.nan)
+    convU.f1 = tmpUo_p1.f1[:,:,:-1] - tmpUo_p1.f1[:,:,1:]
+    convV.f1 = np.full((tmpVo.f1.shape[0],tmpVo.f1.shape[1],tmpVo.f1.shape[2]),np.nan)
+    convV.f1 = tmpVo_p1.f1[:,:-1,:] - tmpVo_p1.f1[:,1:,:]
+
+    convU.f3 = np.full((tmpUo.f3.shape[0],tmpUo.f3.shape[1],tmpUo.f3.shape[2]),np.nan)
+    convU.f3 = tmpUo_p1.f3[:,:,:-1] - tmpUo_p1.f3[:,:,1:]
+    convV.f3 = np.full((tmpVo.f3.shape[0],tmpVo.f3.shape[1],tmpVo.f3.shape[2]),np.nan)
+    convV.f3 = tmpVo_p1.f3[:,:-1,:] - tmpVo_p1.f3[:,1:,:]
+
+    convU.f4 = np.full((tmpUo.f4.shape[0],tmpUo.f4.shape[1],tmpUo.f4.shape[2]),np.nan)
+    convU.f4 = tmpUo_p1.f4[:,:,:-1] - tmpUo_p1.f4[:,:,1:]
+    convV.f4 = np.full((tmpVo.f4.shape[0],tmpVo.f4.shape[1],tmpVo.f4.shape[2]),np.nan)
+    convV.f4 = tmpVo_p1.f4[:,:-1,:] - tmpVo_p1.f4[:,1:,:]
+
+    convU.f5 = np.full((tmpUo.f5.shape[0],tmpUo.f5.shape[1],tmpUo.f5.shape[2]),np.nan)
+    convU.f5 = tmpUo_p1.f5[:,:,:-1] - tmpUo_p1.f5[:,:,1:]
+    convV.f5 = np.full((tmpVo.f5.shape[0],tmpVo.f5.shape[1],tmpVo.f5.shape[2]),np.nan)
+    convV.f5 = tmpVo_p1.f5[:,:-1,:] - tmpVo_p1.f5[:,1:,:]
+
+    # add the convergence between the two faces
+    convV.f1[:,-1,:] = tmpVo.f1[:,-1,:] - np.fliplr(tmpUo.f3[:,:,0])
+    convU.f3[:,:,-1] = tmpUo.f3[:,:,-1] - tmpUo.f4[:,:,0]
+    convV.f5[:,-1,:] = tmpVo.f5[:,-1,:] - np.fliplr(tmpUo.f1[:,:,0])
+
+    # return to compact form
+    convU_compact = aste_faces2compact(convU,nfx,nfy)
+    convV_compact = aste_faces2compact(convV,nfx,nfy)
+    
+    return(convU_compact+convV_compact)
+
 #create a function
 def read_aste_float32(filename,nx,ny,nnz):
     with open(filename, 'rb') as f:
