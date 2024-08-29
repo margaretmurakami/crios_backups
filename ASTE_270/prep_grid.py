@@ -73,7 +73,8 @@ myparms = {
     'useRFWF': 1,
     'useNLFS': 4,
     'rStar': 2,
-    'rhoconst': 1029,
+    'rhoconst': 1029,      # density for seawater, kg/m^3
+    'rhoconstFresh': 1000,              # density for freshwater, kg/m^3
     'rcp': 1029 * 3994,    # reference seawater specific heat capacity (1029 kg/m^3) * (3994 J/kg K) = J/(m^3*degC)
     'rhoi': 910,
     'rhosn': 330,
