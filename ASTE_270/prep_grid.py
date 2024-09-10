@@ -86,7 +86,8 @@ myparms = {
     'recInAve': [1, 2],
     'SaltPlumeHeatFlux': 0,
     'SEAICEheatConsFix': 0,
-    'conserveTr': 0
+    'conserveTr': 0,
+    'seaice_variable_salinity_flag': 0
 }
 
 deltaTime = myparms['timeStep']
@@ -220,6 +221,37 @@ mskBasin[condition_14] = 14
 mskBasin = mskBasin * hf1
 mskBasin = mskBasin[0,:,:]   # change indexing for  python
 mskBasin -= 1
+
+# add the Kara Sea as 15-- for face 1
+slice_region = mskBasin[430:450, 240:]
+mask = ~np.isnan(slice_region)  # Use a boolean mask to check where the values are not NaN
+slice_region[mask] = 15         # Update only the values where the mask is True
+mskBasin[430:450, 240:] = slice_region
+
+# for face 3, needs a line
+ys = np.array([476,472,479,489,492,520])
+xs = np.array([0,8,32,55,80,110])
+# Update mskBasin below the stair-stepped line
+for i in range(len(xs) - 1):
+    x_start, x_end = xs[i], xs[i + 1]
+    y_start, y_end = ys[i], ys[i + 1]
+    
+    # Loop through the x range
+    for x in range(x_start, x_end):
+        # Calculate the corresponding y value at this x (vertical segment)
+        y_val = np.interp(x, [x_start, x_end], [y_start, y_end])
+        
+        # Update the values below this y value (set to 14 if the value is 6)
+        mskBasin[450 + np.arange(0, int(y_val) - 450), x] = np.where(
+            mskBasin[450:int(y_val), x] == 6, 15, mskBasin[450:int(y_val), x]
+        )
+
+# Update the region after the last point in xs
+for x in range(xs[-1], 270):
+    mskBasin[450:ys[-1], x] = np.where(
+        mskBasin[450:ys[-1], x] == 6, 15, mskBasin[450:ys[-1], x]
+    )
+
 
 # create mskBasin3D to also add to the dataset
 mskBasin3D = np.tile(mskBasin[np.newaxis,:,:],(nz,1,1))
