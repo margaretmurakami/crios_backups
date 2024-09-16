@@ -1,0 +1,1000 @@
+   30  grep "LaTS2TH" *.F
+   31  grep "LaTS2TH" *.h
+   32  grep "LaTS2TH" *
+   33  grep "tend" *
+   34  vim layers_thermodynamics.F
+   35  ls
+   36  vim layers_thermodynamics.F
+   37  cd 
+   38  ls
+   39  cd crios_backups/
+   40  ls
+   41  cd ASTE_270/
+   42  ls
+   43  cd offline_binning/
+   44  cd sample_images/
+   45  ls -ltr
+   46  cd
+   47  cd crios_backups/
+   48  git pull
+   49  git add --all
+   50  git commit -m "try understanding tendency"
+   51  git push
+   52  squeue
+   53  srun --pty bash -i
+   54  squeue
+   55  srun --pty bash -i
+   56  squeue
+   57  cd crios_backups/
+   58  ls
+   59  cd ASTE_270/offline_binning/sample_images/
+   60  ls -ltr
+   61  squeue
+   62  srun --pty bash -i
+   63  squeue
+   64  srun --pty bash -i
+   65  cd /scratch2/atnguyen/aste_270x450x180/
+   66  cd run_c67w_layers_budget_nlayersorig_advdiffsplit_FULLYfixedXX_checkedwithAN_it0062_nS112_nT112_pk0000631152/
+   67  ls
+   68  cd pkg_c67w_layers_budget_nlayersorig_advdiffsplit/
+   69  ls
+   70  vim layers_thermodynamics.F
+   71  ls
+   72  cd ..
+   73  ls
+   74  cd pkg_c67w_layers_budget_nlayersorig_advdiffsplit/
+   75  vim layers_thermodynamics.F
+   76  :q
+   77  squeue
+   78  cd
+   79  ls
+   80  cd /scratch2/atnguyen/aste_270x450x180/
+   81  ls
+   82  cd OFFICIAL_ASTE_R1_Sep2019/
+   83  ls
+   84  ls -ltr
+   85  cat note_for_Jasmine.txt 
+   86  pwd
+   87  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+   88  ls
+   89  vim available_diagnostics.log 
+   90  pwd
+   91  cd /home/atnguyen/
+   92  ls
+   93  cd labsea/
+   94  ls
+   95  cd matlab/
+   96  ls
+   97  vim do_budget_mass_1face.m
+   98  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+   99  ls
+  100  cd 
+  101  ls
+  102  cd MITgcm
+  103  ls
+  104  cd MITgcm_c68r/
+  105  ls
+  106  cd MITgcm-checkpoint68r/
+  107  ls
+  108  cd model/
+  109  ls
+  110  cd src
+  111  ls
+  112  cd ../inc/
+  113  ls
+  114  grep -i "rUnit2mass" *.h
+  115  cd ../src
+  116  grep -i "rUnit2mass" *.F
+  117  vim ini_parms.F 
+  118  squeue
+  119  srun --pty bash -i
+  120  squeue
+  121  srun --pty bash -i
+  122  squeue
+  123  scancel 1513
+  124  srun --pty bash -i
+  125  squeue
+  126  srun --pty bash -i
+  127  squeue
+  128  srun --pty bash -i
+  129  squeue
+  130  cd /home/atnguyen/
+  131  ls
+  132  cd labsea/
+  133  ls
+  134  cd matlab/
+  135  ls
+  136  pwd
+  137  srun --pty bash -i
+  138  cd crios_backups/
+  139  ls
+  140  git pull
+  141  git add --all
+  142  git commit -m " added quivers and fixed units for plots"
+  143  git push
+  144  squeue
+  145  scancel 1532
+  146  squeue
+  147  srun --pty bash -i
+  148  scancel 1559
+  149  squeue
+  150  squeue
+  151  srun --pty bash -i
+  152  squeue
+  153  cd crios_backups/an_helper_functions/
+  154  ls
+  155  vim plotting_helpers.py
+  156  ls
+  157  cd 
+  158  cd crios_backups/ASTE_270/
+  159  ls
+  160  cd Pemberton/
+  161  grep "ADVr_TH" *.ipynb
+  162  squeue
+  163  cd
+  164  cd crio
+  165  cd crios_backups/
+  166  git pull
+  167  git add --all
+  168  git commit -m "FINALLY ADDED TS DISTRIBUTION WITH ADV TERMS LIKE PROPOSAL"
+  169  git push
+  170  squeue
+  171  srun --pty bash -i
+  172  cd crios_backups/
+  173  ls
+  174  cd ASTE_270/
+  175  cd Pemberton/
+  176  ls
+  177  grep "np.log" *.ipynb
+  178  squeue
+  179  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  180  vim available_diagnostics.log 
+  181  ls
+  182  cd diags/BUDG/
+  183  ls
+  184  vim budg3d_zflux_set2.0000004464.meta 
+  185  squeue
+  186  ls
+  187  cd crios_backups/
+  188  cd ASTE_270/
+  189  ls
+  190  cd Pemberton/
+  191  grep "landmsk" *.ipynb
+  192  squeue
+  193  srun --pty bash -i
+  194  squeue
+  195  srun --pty bash -i
+  196  squeue
+  197  squeue
+  198  scancel 1607
+  199  squeue
+  200  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  201  vim available_diagnostics.log 
+  202  cd diags/BUDG/
+  203  ls
+  204  vim budg3d_hflux_set2.0000004464.meta 
+  205  squeue
+  206  scancel 1620
+  207  squeue
+  208  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  209  ls
+  210  squeue
+  211  vim NAMELISTS/data.diagnostics
+  212  vim available_diagnostics.log 
+  213  squeue
+  214  cd
+  215  ls
+  216  cd crios_backups/
+  217  ls
+  218  cd ASTE_270/
+  219  ls
+  220  cd offline_binning/
+  221  ls
+  222  cd sample_images/
+  223  ls
+  224  ls -ltr
+  225  cd 
+  226  ls
+  227  cd crios_backups/
+  228  git pull
+  229  git add --all
+  230  git commit -m "added oceflx for I and O, fixed bug in tendencies area calculation"
+  231  git push
+  232  squeue
+  233  scancel 1624
+  234  squeue
+  235  srun --pty bash -i
+  236  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  237  vim available_diagnostics.log 
+  238  cd /home/atnguyen/labsea/matlab/
+  239  ls
+  240  vim -R do_budget_mass_1face.m
+  241  cd /home/atnguyen/labsea/matlab/
+  242  ls
+  243  vim do_budget_mass_1face.m 
+  244  squeue
+  245  srun --pty bash -i
+  246  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  247  vim available_diagnostics.log 
+  248  cd
+  249  cd crios_backups/ASTE_270/offline_binning/sample_images/
+  250  ls -ltr
+  251  squeue
+  252  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  253  vim available_diagnostics.log 
+  254  srun --pty bash -i
+  255  squeue
+  256  srun --pty bash -i
+  257  squeue
+  258  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  259  vim available_diagnostics.log 
+  260  squeue
+  261  srun --pty bash -i
+  262  cd crios_backups/
+  263  git pull
+  264  git add --all
+  265  git commit -m "adding some sample tendencies, not sure if correct"
+  266  git push
+  267  squeue
+  268  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  269  vim available_diagnostics.log 
+  270  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  271  vim available_diagnostics.log 
+  272  cd crios_backups/
+  273  ls
+  274  cd ASTE_270
+  275  ls
+  276  cd Pemberton/
+  277  ls
+  278  rm Figure12_15_tendencies.ipynb 
+  279  squeue
+  280  scancel 1646
+  281  srun --pty bash -i
+  282  squeue
+  283  srun --pty bash -i
+  284  squeue
+  285  srun --pty bash -i
+  286  squeue
+  287  srun --pty bash -i
+  288  cd crios_backups/ASTE_270
+  289  ls
+  290  cd offline_binning/
+  291  ls
+  292  cd sample_images/
+  293  ls -ltr
+  294  cd 
+  295  cd crios_backups/
+  296  ls
+  297  git pull
+  298  git add --all
+  299  git commit -m "thought about what it means for surface tendencies"
+  300  git push
+  301  ls
+  302  cd ASTE_270
+  303  ls
+  304  cd offline_binning/
+  305  ls
+  306  cd sample_images/
+  307  ls -ltr
+  308  squeue
+  309  cd /home/atnguyen/labsea/matlab/
+  310  ls
+  311  vim -R do_budget_heat_1face.m 
+  312  cd /home/atnguyen/labsea/matlab/
+  313  ls
+  314  vim -R do_budget_heat_1face.m 
+  315  vim -R do_budget_mass_1face.m 
+  316  squeue
+  317  srun --pty bash -i
+  318  last
+  319  last trostel
+  320  last swilliamson
+  321  last goldberg
+  322  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  323  vim available_diagnostics.log 
+  324  cd /home/atnguyen/labsea/matlab/
+  325  ls
+  326  vim do_budget_heat_1face.m 
+  327  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  328  vim available_diagnostics.log 
+  329  squeue
+  330  srun --pty bash -i
+  331  squeue
+  332  srun --pty bash -i
+  333  cd /home/atnguyen/matlab_mnt_nansen/HelenPillar_layers/
+  334  ls
+  335  ls *.m
+  336  vim lookat_layers_aste.m 
+  337  squeeu
+  338  squeue
+  339  srun --pty bash -i
+  340  squeue
+  341  scancel 1668
+  342  srun --pty bash -i
+  343  squeue
+  344  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  345  vim available_diagnostics.log 
+  346  squeue
+  347  cd 
+  348  cd crios_backups/
+  349  ls
+  350  git pull
+  351  git add --all
+  352  git commit -m "added G and J vectors"
+  353  git push
+  354  squeue
+  355  cd crios_backups/
+  356  ls
+  357  cd ASTE_270/
+  358  ls
+  359  grep -r "Davis" --include \*.ipynb .
+  360  squeue
+  361  srun --pty bash -i
+  362  cd crios_backups/ASTE_270
+  363  ls
+  364  cd offline_binning/sample_images/
+  365  ls -ltr
+  366  squeue
+  367  srun --pty bash -i
+  368  cd crios_backups/
+  369  ls
+  370  cd ASTE_270
+  371  grep "Davis" *.ipynb
+  372  grep "Davis" 
+  373  srun --pty bash -i
+  374  squue
+  375  squeue
+  376  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  377  ls
+  378  vim available_diagnostics.log 
+  379  cd
+  380  cd crios_backups/
+  381  ls
+  382  git pull
+  383  git add --all
+  384  git commit -m "testing for surface layer J terms in calc_G_J.ipynb file"
+  385  git puh
+  386  git push
+  387  squeue
+  388  scancel 1673
+  389  srun --pty bash -i
+  390  squeue
+  391  srun --pty bash -i
+  392  cd crios_backups/
+  393  ls
+  394  cd ASTE_270/Pemberton/
+  395  ls
+  396  grep -r "get_aste_vector_face1_3" --include \*.ipynb .
+  397  squeue
+  398  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  399  vim available_diagnostics.log 
+  400  srun --pty bash -i
+  401  squeue
+  402  srun --pty bash -i
+  403  squeue
+  404  squeue
+  405  srun --pty bash -i
+  406  cd crios_backups/ASTE_270/
+  407  ls
+  408  cd offline_binning/
+  409  ls
+  410  cd sample_images/
+  411  ls -ltr
+  412  squeue
+  413  scancel 1706
+  414  cd crios_backups/
+  415  git pull
+  416  git add --all
+  417  git commit -m "added some examples of tendencies, need to fix more as budgets"
+  418  git push
+  419  squeue
+  420  srun --pty bash -i
+  421  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  422  squeue
+  423  vim available_diagnostics.log 
+  424  squeue
+  425  srun --pty bash -i
+  426  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  427  vim available_diagnostics.log 
+  428  squeue
+  429  srun --pty bash -i
+  430  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  431  vim available_diagnostics.log 
+  432  squeue
+  433  scancel 1708
+  434  squeue
+  435  srun --pty bash -i
+  436  squeue
+  437  srun --pty bash -i
+  438  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  439  ls
+  440  vim available_diagnostics.log 
+  441  srun --pty bash -i
+  442  squeue
+  443  cd crios_backups/
+  444  git pull
+  445  git add --all
+  446  git commit -m "adding adv files big An debug"
+  447  git push
+  448  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  449  vim available_diagnostics.log 
+  450  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  451  ls
+  452  cd diags/STATE
+  453  ls
+  454  cd /home/atnguyen/
+  455  ls
+  456  cd matlab_mnt_nansen/atn_scripts
+  457  ls
+  458  vi do_gcmfaces_budget_heat_ts.m
+  459  cd 
+  460  cd /home/atnguyen/matlab/atn_tools/
+  461  vi calc_UV_conv_mod.m
+  462  ls
+  463  cd gcmfaces_mod/
+  464  vi calc_UV_conv_mod
+  465  ls
+  466  vi calc_UV_conv_mod.m
+  467  squeue
+  468  srun --pty bash -i
+  469  squeue
+  470  srun --pty bash -i
+  471  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  472  vim available_diagnostics.log 
+  473  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  474  vim available_diagnostics.log 
+  475  squeue
+  476  squeue
+  477  srun --pty bash -i
+  478  squeue
+  479  srun --pty bash -i
+  480  squeue
+  481  srun --pty bash -i
+  482  squeue
+  483  cd crios_backups/
+  484  ls
+  485  git pull
+  486  git add --all
+  487  git commit -m "added budgets for heat and salt, full aste"
+  488  git push
+  489  ls
+  490  cd crios_backups/
+  491  git pull
+  492  git add --all
+  493  git commit -m "added some testing for single cell vectors, does not work below surface"
+  494  git push
+  495  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  496  vim available_diagnostics.log 
+  497  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  498  vim available_diagnostics.log 
+  499  srun --pty bash -i
+  500  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  501  vim available_diagnostics.log 
+  502  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  503  vim available_diagnostics.log 
+  504  squeue
+  505  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  506  vim available_diagnostics.log 
+  507  ls
+  508  cd diags/
+  509  ls
+  510  cd STATE
+  511  ls
+  512  cd ..
+  513  cd ../NAMELISTS/
+  514  ls
+  515  vim data.diagnostics
+  516  cd ../diags/STATE/
+  517  ls
+  518  vim state_3d_set1.0000043776.meta 
+  519  cd
+  520  cd crios_backups/
+  521  git pull
+  522  git add --all
+  523  git commit -m "added surface tendencies BarentsS March"
+  524  git push
+  525  git pull
+  526  git add --all
+  527  git commit -m "looking at example for TS budgeting in TS space"
+  528  git push
+  529  srun --pty bash -i
+  530  cd /home/mmurakami/crios_backups/ASTE_270/offline_binning/sample_images/
+  531  ls -ltr
+  532  cd 
+  533  cd crios_backups/
+  534  git pull
+  535  git add --all
+  536  git commit -m "adding files for budgeting from An meeting"
+  537  git push
+  538  srun --pty bash -i
+  539  cd crios_backups/
+  540  git pull
+  541  git add --all
+  542  git commit -m "adding fully budgeted salt in TS"
+  543  git push
+  544  squeue
+  545  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  546  vim available_diagnostics.log 
+  547  cd 
+  548  srun --pty bash -i
+  549  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  550  vim available_diagnostics.log 
+  551  squeue
+  552  squeue
+  553  srun --pty bash -i
+  554  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  555  vim available_diagnostics.log 
+  556  cd
+  557  cd crios_backups/
+  558  ls
+  559  git pull
+  560  git add --all
+  561  git commit -m "finished single cell closure and plots for BarentsS"
+  562  git push
+  563  squeue
+  564  scancel 1751
+  565  squeue
+  566  srun --pty bash -i
+  567  cd crios_backups/
+  568  git pull
+  569  git add --all
+  570  git commit -m "added plots for single point"
+  571  git push
+  572  squeue
+  573  srun --pty bash -i
+  574  squeeu
+  575  squeue
+  576  srun --pty bash -i
+  577  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  578  vim available_diagnostics.log 
+  579  squeue
+  580  cd
+  581  cd crios_backups/
+  582  git pull
+  583  git add --all
+  584  git commit -m "added TS for patch"
+  585  git push
+  586  squeue
+  587  scancel 1753
+  588  srun --pty bash -i
+  589  cd crios_backups/
+  590  git pull
+  591  git add --all
+  592  git commit -m "added surface forcing"
+  593  git push
+  594  srun --pty bash -i
+  595  squeue
+  596  srun --pty bash -i
+  597  squeue
+  598  squeue
+  599  scancel 1762
+  600  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  601  cd NAMELISTS/
+  602  vim -R data.diagnostics
+  603  cd ..
+  604  vim available_diagnostics.log 
+  605  srun --pty bash -i
+  606  squeue
+  607  srun --pty bash -i
+  608  cd crios_backups/
+  609  ls
+  610  git pull
+  611  git add --all
+  612  git commit -m "added decomposition of terms from surface for heat and salt"
+  613  git push
+  614  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/NAMELISTS/
+  615  vim data.diagnostics
+  616  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  617  vim -R available_diagnostics.log 
+  618  srun --pty bash -i
+  619  ls
+  620  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  621  ls
+  622  cd 
+  623  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  624  pwd
+  625  cd 
+  626  ls
+  627  cd MITgcm
+  628  ls
+  629  cd MITgcm_c68r/
+  630  ls
+  631  cd MITgcm-checkpoint68r/
+  632  ls
+  633  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  634  ls
+  635  ls code_adv7_bypass_tamc
+  636  grep -rl "SFLUX" --include="*.F" .
+  637  vim -R /code_BE2_dthetadr_sshv4mo_fix_logdkr2/diagnostics_main_init.F
+  638  vim -R ./code_BE2_dthetadr_sshv4mo_fix_logdkr2/diagnostics_main_init.F
+  639  vim -R ./code_BE2_dthetadr_sshv4mo_fix_logdkr2/ctrl_check.F
+  640  vim -R ./code_BE2_dthetadr_sshv4mo_fix_logdkr2/seaice_growth.F
+  641  srun --pty bash -i
+  642  squeue
+  643  srun --pty bash -i
+  644  cd crios_backups/
+  645  git pull
+  646  git add --all
+  647  git commit -m "added residual for the points in a single TS bin"
+  648  git push
+  649  git pull
+  650  git add --all
+  651  git commit -m "finalized budgeting for a sample TS bin"
+  652  git push
+  653  srun --pty bash -i
+  654  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  655  vim available_diagnostics.log 
+  656  srun --pty bash -i
+  657  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  658  ls
+  659  grep -rl "SFLUX" --include="*.F"
+  660  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/seaice_growth.F
+  661  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/ctrl_check.F
+  662  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/diagnostics_main_init.F
+  663  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/seaice_growth.F
+  664  grep -rl "TFLUX" --include="*.F"
+  665  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/seaice_growth.F
+  666  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/diagnostics_main_init.F
+  667  cd ..
+  668  ls
+  669  ls -ltr
+  670  cd OFFICIAL_ASTE_it0_rerun
+  671  grep -rl "TFLUX" --include="*.F"
+  672  cd ../run_BE2_dthetadr_redo2_obcsbl_adv7_it0000_pk0000000002
+  673  ls
+  674  grep -rl "SFLUX" --include="*.F"
+  675  cd ..
+  676  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  677  ls
+  678  vim available_diagnostics.log 
+  679  grep -rl "surf_flux" --include="*.F" .
+  680  vim available_diagnostics.log 
+  681  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/
+  682  grep -rl "TFLUX" --include="*.F"
+  683  vim model/src/diags_oceanic_surf_flux.F
+  684  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  685  cd NAMELISTS/
+  686  vim data.diagnostics
+  687  squeue
+  688  scancel 1801
+  689  srun --pty bash -i
+  690  ls
+  691  pwd
+  692  cd /scratch/mmurakami/
+  693  ls
+  694  cd ASTE_270/
+  695  ls
+  696  cp /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/exf_zflux_set1.tgz ./
+  697  cp /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/diags/exf_zflux_set1.tgz ./
+  698  tar -xvzf exf_zflux_set1.tgz 
+  699  ls
+  700  rm -r BUDG
+  701  ls
+  702  rm ex
+  703  rm exf_zflux_set1.tgz 
+  704  ls
+  705  cd 
+  706  ls
+  707  cd MITgcm
+  708  ls
+  709  cd MITgcm_c68r/
+  710  ls
+  711  cd MITgcm-checkpoint68r/
+  712  ls
+  713  grep -rl "SFLUX" --include="*.F"
+  714  vim src/diags_oceanic_surf_flux.F
+  715  vim model/src/diags_oceanic_surf_flux.F
+  716  ls
+  717  find . --name "available"
+  718  vim model/src/diags_oceanic_surf_flux.F
+  719  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  720  vim NAMELISTS/data.diagnostics
+  721  ls diags/
+  722  ls diags/STATE
+  723  ls diags/TRSP
+  724  ls
+  725  ls diags/
+  726  pwd
+  727  cd diags/BUDG
+  728  ls
+  729  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  730  vim NAMELISTS/data.diagnostics
+  731  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  732  vim available_diagnostics.log 
+  733  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  734  cd ..
+  735  pwd
+  736  find . -type f -name "*surf_flux*.F"
+  737  cd OFFICIAL_ASTE_R1_Sep2019/
+  738  ls
+  739  find . -type f -name "*surf_flux*.F"
+  740  vim NAMELISTS/data.diagnostics
+  741  grep -rl "TFLUX" --incl
+  742  grep -rl "TFLUX" --include="*.F"
+  743  grep -rl "SFLUX" --include="*.F"
+  744  vim code_BE2_dthetadr_sshv4mo_fix_logdkr2/seaice_growth.F 
+  745  cd ..
+  746  ls
+  747  ls -ltr
+  748  cd run_c66h_jra55_rStar_v1q_noicoast_0xx3D_it0007_pk0000000002
+  749  ls
+  750  ls -ltr
+  751  cd code_c66h_ggl90_ad/
+  752  ls
+  753  grep -rl "SFLUX" --include="*.F"
+  754  vim ecco_check.F 
+  755  vim seaice_growth.F 
+  756  squeue
+  757  srun --pty bash -i
+  758  squeue
+  759  srun --pty bash -i
+  760  squeue
+  761  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/
+  762  grep -rl "SFLUX" --include="*.F"
+  763  srun --pty bash -i
+  764  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  765  cd ..
+  766  ls
+  767  find . -name "*oceanic_surf_flux.F"
+  768  cd ..
+  769  ls
+  770  find . -name "*oceanic_surf_flux.F"
+  771  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  772  vim available_diagnostics.log 
+  773  vim NAMELISTS/data.diagnostics
+  774  vim available_diagnostics.log 
+  775  squeeu
+  776  squeue
+  777  srun --pty bash -i
+  778  cd /home/atnguyen/matlab
+  779  ls
+  780  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/
+  781  grep -rl "SFLUX" --include="*.F"
+  782  vim model/src/diags_oceanic_surf_flux.F
+  783  grep -rl "surForcS" --include="*.F"
+  784  grep -rl "T_dilution_effect" --include="*.F"
+  785  cd MITgcm-checkpoint68r/
+  786  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/
+  787  grep -rl "SFLUX" --include="*.F" .
+  788  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  789  grep -rl "useRealFreshWaterFlux" .
+  790  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  791  vim available_diagnostics.log 
+  792  squeue
+  793  srun --pty bash -i
+  794  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  795  vim available_diagnostics.log 
+  796  squue
+  797  squeue
+  798  srun --pty bash -i
+  799  squeue
+  800  srun --pty bash -i
+  801  squeue
+  802  srun --pty bash -i
+  803  squeue
+  804  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  805  cd NAMELISTS/
+  806  vim data.diagnostics
+  807  vim ../available_diagnostics.log 
+  808  vim data.diagnostics
+  809  vim ../available_diagnostics.log 
+  810  vim data.diagnostics
+  811  vim ../available_diagnostics.log 
+  812  cd 
+  813  cd crios_backups/
+  814  git pull
+  815  git add --all
+  816  git commit -m "added basic trendlines"
+  817  git push
+  818  squeue
+  819  srun --pty bash -i
+  820  squeue
+  821  srun --pty bash -i
+  822  squeueu
+  823  squeue
+  824  scancel 1842
+  825  srun --pty bash -i
+  826  cd crios_backups/
+  827  git pull
+  828  git add --all
+  829  git commit -m "added single cell time series for J terms"
+  830  git push
+  831  squeue
+  832  scancel 1844
+  833  squeue
+  834  srun --pty bash -i
+  835  cd crios_backups/
+  836  git pull
+  837  git add --all
+  838  git commit -m "added salt time series for one point"
+  839  git push
+  840  squeue
+  841  srun --pty bash -i
+  842  squeue
+  843  scancel 1859
+  844  srun --pty bash -i
+  845  cd crios_backups/
+  846  ;s
+  847  ls
+  848  cd ASTE_270
+  849  grep -rl "truncate" .
+  850  grep -rl "gsw.rho" .
+  851  squeue
+  852  scancel 1861
+  853  cd 
+  854  cd crios_backups/
+  855  git pull
+  856  git add --all
+  857  git commit -m "added time series for surface Barents, 1year"
+  858  git push
+  859  srun --pty bash -i
+  860  squeue
+  861  srun --pty bash -i
+  862  cd crios_backups/
+  863  git pull
+  864  git add --all
+  865  git commit -m "added surface J terms time series for salt and heat"
+  866  git push
+  867  srun --pty bash -i
+  868  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  869  vim available_diagnostics.log 
+  870  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  871  ls
+  872  find . -name "diags_oceanic_surf_flux*"
+  873  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  874  ls
+  875  ls code_BE2_dthetadr_sshv4mo_fix_logdkr2/
+  876  ls code_adv7_bypass_tamc/
+  877  cd ..
+  878  ls 0ltr
+  879  ls -ltr
+  880  find . -name "*surf_flux.f"
+  881  ls
+  882  ls -ltr
+  883  cd OFFICIAL_ASTE_it0_rerun
+  884  lds
+  885  ls
+  886  ls code_BE2_dthetadr_sshv4mo_fix_logdkr2/
+  887  cd ../OFFICIAL_ASTE_R1_Sep2019/
+  888  vim available_diagnostics.log 
+  889  cd code_BE2_dthetadr_sshv4mo_fix_logdkr2/
+  890  ls
+  891  vim ../available_diagnostics.log 
+  892  cd ..
+  893  ls
+  894  cd ..
+  895  find . -name "external_forcing_surf.f"
+  896  ls
+  897  ls -ltr
+  898  cd run_c67w_adxOFF_20022020_capxxN50_v4r5obcspretanbl_GiV4r3_nlfs_adv30_it0062_pk0000000007_bro/code_c67w_adxOFF_20022020_capxxN50/
+  899  ls
+  900  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/model/
+  901  ls
+  902  cd src
+  903  ls
+  904  ls *surf*
+  905  vim diags_oceanic_surf_flux.F
+  906  grep -rl "surf_flux" --include="*.F" .
+  907  cd ../..
+  908  grep -rl "surf_flux" --include="*.F" .
+  909  vim verification/lab_sea/labsea/layers/code_c68r_HELEN_ADVDIFFSPLIT/layers_save.F
+  910  vim src/diags_oceanic_surf_flux.F
+  911  cd model/src
+  912  vim diags_oceanic_surf_flux.F 
+  913  find . -type f -name "*surf_flux*.F"
+  914  cd ../..
+  915  grep -r "surf" --include "*.F" .
+  916  grep -r "surForcS" --include "*.F" .
+  917  grep -r "empmr" --include "*.F" .
+  918  squeue
+  919  ls
+  920  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/
+  921  find . -name "diags_oceanic_surf_flux*"
+  922  vim ./model/src/diags_oceanic_surf_flux.F
+  923  grep -rl "saltFlux" .
+  924  vim /model/src/external_forcing_surf.F
+  925  cd model/src/
+  926  vim external_forcing_surf.F 
+  927  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  928  vim available_diagnostics.log 
+  929  grep -rl "useRealFreshWaterFlux" .
+  930  ls
+  931  cd ..
+  932  ls
+  933  ls -ltr
+  934  cd run_c67w_adxOFF_diffkh_viscAhA4_SPvolOFF_capxx2em4_it0062_pk0000000007_16yrOK
+  935  ls
+  936  cd ../run_c67w_adxOFF_diffkh_viscAhA4_SPvolOFF_nocapxx_it0062_pk0000000007_16yrOK
+  937  ls
+  938  cd code_ASTER1_c67w_forGalen/
+  939  ls
+  940  cd ..
+  941  ls
+  942  find . -name "diags_oceanic_surf_flux.f"
+  943  cd /scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/
+  944  vim available_diagnostics.log 
+  945  cd 
+  946  cd crios_backups/
+  947  git pull
+  948  git add --all
+  949  git commit -m "added attempts at surface forcing"
+  950  git push
+  951  srun --pty bash -i
+  952  squeue
+  953  srun --pty bash -i
+  954  squeue
+  955  srun --pty bash -i
+  956  cd crios_backups/ASTE_270/
+  957  ls
+  958  cd Pemberton/
+  959  ls
+  960  cd BarentsS_paper/
+  961  grep -r "hspace" --include "*.ipynb" .
+  962  squeue
+  963  cd ../Tendencies/
+  964  ls
+  965  vim get_J_terms.py
+  966  squeue
+  967  cd ..
+  968  ls
+  969  cd BarentsS_paper/
+  970  ls -ltr
+  971  chmod u+w earlyyears_J.nc
+  972  ls -ltr
+  973  rm earlyyears_J.nc
+  974  mv earlyyears_J_2003.nc J_heat_2003.nc
+  975  ls
+  976  cd 
+  977  cd crios_backups/
+  978  git pull
+  979  git add --all
+  980  git commit -m "added some TS analysis"
+  981  git spuh
+  982  git push
+  983  cd crios_backups/
+  984  ls
+  985  cd ASTE_270
+  986  ls
+  987  cd Pemberton/BarentsS_paper/
+  988  ls
+  989  ls -ltr
+  990  squeue
+  991  srun --pty bash -i
+  992  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/
+  993  ls
+  994  cd src
+  995  cd model/src/
+  996  ls
+  997  ls *surf*
+  998  vim diags_oceanic_surf_flux.F
+  999  grep -rl "SFLUX" --include="*.F" .
+ 1000  vim diags_oceanic_surf_flux.F
+ 1001  cd MITgcm/MITgcm_c68r/MITgcm-checkpoint68r/model/src/
+ 1002  vim diags_oceanic_surf_flux.F
+ 1003  cd ../..
+ 1004  grep -rl "HeatCapacity_Cp" --include="*.F" .
+ 1005  vim -R /model/src/set_defaults.F
+ 1006  vim -R ./model/src/set_defaults.F
+ 1007  vim -R ./model/src/diags_oceanic_surf_flux.F 
+ 1008  grep -rl "PmEpR" --include="*.F" .
+ 1009  grep -rl "PmEpR" --include="*.h" .
+ 1010  vim -R ./model/inc/SURFACE.h
+ 1011  vim -R ./model/src/external_forcing_surf.F
+ 1012  pwd
+ 1013  grep -i empmr pkg/exf/*
+ 1014  vim -R pkg/exf/exf_mapfields.F 
+ 1015  pwd
+ 1016  vim -R pkg/exf/EXF_PARAM.h 
+ 1017  vpwd
+ 1018  grep -i empmr */*/*.h
+ 1019  vim ./model/inc/PARAMS.h 
+ 1020  pwd
+ 1021  vim ./model/inc/PARAMS.F
+ 1022  grep -i empmr */*/*.F
+ 1023  grep -i empmr */*/*.F |grep -i rho
+ 1024  pwd
+ 1025  cd /home/atnguyen/nansen/MITgcm_c68v/mysetups/aste_270x450x180/
+ 1026  ls
+ 1027  cd build_c68v
+ 1028  vim -R diags_oceanic_surf_flux.F
+ 1029  history > $HOME/atnhelp_9_11.txt
