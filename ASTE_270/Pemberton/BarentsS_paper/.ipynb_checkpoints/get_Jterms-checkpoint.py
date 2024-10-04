@@ -231,7 +231,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     trWtopKPP = -(KPPg_SLT)*myparms['rhoconst']           # g/s
     trWtop = trWtopADV + trWtopDF + trWtopKPP             # g/s 
     
-    print(trWtop.shape)
+    #print(trWtop.shape)
     sptop = mk3D_mod(oceSPflx,oceSPtnd) - np.cumsum(oceSPtnd, axis=0)        # we include this in our zconv_top term
     sptop = sptop * RAC3        # g/s
     
@@ -509,7 +509,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     
     # set for all months
     vol = np.zeros((len(tsstr),nz, ny, nx))
-    print("volume allocation shape",vol.shape)
+    #print("volume allocation shape",vol.shape)
     
     for t in range(len(tsstr)):
         t1 = tsstr[t]
@@ -561,8 +561,8 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
 
     # create the bins of TS data
     # try new T bins where different sizes
-    refined_section = np.linspace(-3,8,93)
-    coarse_section = np.linspace(8,15,21,endpoint=False)
+    refined_section = np.linspace(-3,12,93-30)
+    coarse_section = np.linspace(12,15,21+30,endpoint=False)
     binsTH_edges = np.concatenate((refined_section,coarse_section[1:]))
     binsTH_centers = (binsTH_edges[:-1] + binsTH_edges[1:])/2
     nT = binsTH_edges.shape[0]-1

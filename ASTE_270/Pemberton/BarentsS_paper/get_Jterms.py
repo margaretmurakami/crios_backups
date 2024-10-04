@@ -561,8 +561,8 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
 
     # create the bins of TS data
     # try new T bins where different sizes
-    refined_section = np.linspace(-3,8,93)
-    coarse_section = np.linspace(8,15,21,endpoint=False)
+    refined_section = np.linspace(-3,12,93-30)
+    coarse_section = np.linspace(12,15,21+30,endpoint=False)
     binsTH_edges = np.concatenate((refined_section,coarse_section[1:]))
     binsTH_centers = (binsTH_edges[:-1] + binsTH_edges[1:])/2
     nT = binsTH_edges.shape[0]-1
