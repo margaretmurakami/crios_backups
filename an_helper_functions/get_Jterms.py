@@ -27,7 +27,7 @@ from timing_functions import *           # ts2dte, get_fnames, etc.
 from binning import *                    # bin_array, create_mesh
 
 
-exec(open("/home/mmurakami/crios_backups/ASTE_270/prep_grid.py").read())
+exec(open("/home/mmurakami/crios_backups/an_helper_functions/prep_grid.py").read())
 
 def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     '''
