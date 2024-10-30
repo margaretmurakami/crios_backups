@@ -29,9 +29,26 @@ from binning import *                    # bin_array, create_mesh
 
 exec(open("/home/mmurakami/crios_backups/an_helper_functions/prep_grid.py").read())
 
-def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
+def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     '''
     The goal of this will be to return the arrays JtermsT and JtermsS for one month, as well as JtermsT and S without normalizing by binwidths
+
+    Inputs:
+        tsstr: the filenames we want to access
+        datetimes: the np datetime64 files that we want to access (from the beginning and end of the averaged files)
+        dt: the local dt in seconds between the two timesteps
+        mymsk: the mask in compact format (shape ny,nx) of the mask we want to select from
+        RAC: the area of the cells in compact form (ny,nx)
+        RAC3: the mk3d mod of the cells in compact form (nz,ny,nx)
+        dterm: the depth up to which we want to calculate the J terms (automatically nz if not set)
+
+    Outputs:
+        vol_mesh: volume in TS space
+        JtermsT: temperature J terms of the units Sv/PSU
+        JtermsS: salinity J terms of the units Sv/degC
+        JtermsT_nn: J terms for T in units Sv
+        JtermsS_nn: J terms for S in units Sv
+    
     '''
     #############################################################################
     print("doing salt budget")
@@ -628,7 +645,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     for i,j in zip(ys,xs):
     
         # loop through the z values and see if we can plot
-        for k in range(nz-1):                 # stop at second to last level for 
+        for k in range(dterm-1):                 # stop at second to last level for 
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
     
@@ -667,7 +684,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     for i,j in zip(ys,xs):
     
         # loop through the depths and add
-        for k in range (nz-1):
+        for k in range (dterm-1):
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
         
@@ -709,7 +726,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     for i,j in zip(ys,xs):
     
         # loop through the z values and see if we can plot
-        for k in range(nz-1):                 # stop at second to last level for 
+        for k in range(dterm-1):                 # stop at second to last level for 
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
     
@@ -747,7 +764,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms):
     for i,j in zip(ys,xs):
     
         # loop through the depths and add
-        for k in range (nz-1):
+        for k in range (dterm-1):
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
         
