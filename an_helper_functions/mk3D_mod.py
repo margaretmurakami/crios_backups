@@ -1,4 +1,5 @@
 # path to this is /workspace/atnguyen/atn_tools/gcmfaces_mod on nansen
+# this will be essentially the same as np.tile
 def mk3D_mod(arr_lessd, arr_3d):
     '''
     inputs
