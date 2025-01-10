@@ -223,7 +223,6 @@ It is well-established that the Arctic is warming at a substantially faster rate
     \label{fig:wholeArctic}
 \end{figure}
 
-
 % what is happening in the Barents Sea and mechanisms causing this change
 The Barents Sea has experienced a steady increase in heat content over recent decades \cite{Smedsrud2013,Bianco2024}, accompanied by a decline in near-surface freshwater content \cite{Watelet2020}. These changes are altering ocean stratification throughout the sea \cite{Lind2018,Hordoir2022}. The bathymetric features of the Barents Sea (Figure~\ref{fig:map}) play a key role in shaping these dynamics; the depth of the Bear Island Trench facilitates the greatest inflow of Atlantic-sourced water through the Barents Sea Opening (BSO) including the Svalbard Archipelago \cite{Kalhagen2024}, with other inflow North of Svalbard \cite{Lind2012,Lundesgaard2022}. The shallowness of the Sea as compared with the AO itself enhances the relative importance of atmospheric and surface processes, heat loss to the atmosphere modifies inflowing water \cite{arthun2010}, while the seasonal cycle of sea ice can brine to the surface layers of the sea \cite{schauer2002}. A key mechanism behind recent changes to the Barents Sea is the rapid sea ice reduction \cite{Rieke2023}, which can be attributed in part to the increased volume and warming of Atlantic inflow \cite{Smedsrud2010,Onarheim2018,Smedsrud2022}. This warm inflow and sea ice reduction reduces surface freshwater input, weakens stratification, and allows for enhanced vertical mixing, creating a feedback loop that accelerates "Atlantification," or the transformation of the Barents Sea into a warm, well-mixed Atlantic structure \cite{Arthun2012,Polyakov2017,Gerland2023}. During winter, when surface heat fluxes are negative, ocean heat transport (OHT) from the Atlantic inflow is the dominant cause of ice melt \cite{Ivanov2012,Tsubouchi2021}, increasing the ice-free area and amplifying surface heat release \cite{Skagseth2020}. The northward spread of warm, saline water \cite{Oziel2016} changes local ecologies \cite{Bogstad2015,Dalpadado2014,Ingvaldsen2021} and further erodes stratification \cite{Lind2018}. This warm water cools along its inflow path, but the ability of the Barents Sea to cool Atlantic inflow appears to be diminishing \cite{Shu2021,Skagseth2020}. These interlinked feedbacks--sea ice loss, atmospheric changes due to AA, and OHT--remain complex, and understanding their interactions is critical for predicting the future regimes of the region.
 
@@ -365,6 +364,13 @@ The relative roles of these three terms--advection, diffusion, and external forc
 % summarizee some insights provided by earlier studies on why the WMT framework is useful
 One approach to quantify the changes in \emph{T} and \emph{S} is through the water mass transformation (WMT) framework \cite{Walin_1977,Walin1982}. Water masses, defined by distinct sets of \emph{T} and \emph{S} coordinates, have long been used to study the stratification and large scale circulation in the ocean because of their relation to ocean density \cite{sverdrup1942}. In this framework, a "transformation" describes the process by which one ocean water mass--defined by a volume enclosed between isothermal and isohaline surfaces--is converted into another through changes in \emph{T} and \emph{S}. These changes are driven by advection, internal diffusion, and external forcing.
 
+\begin{figure}
+    \includegraphics[width=\linewidth]{figs/TS_example.png}
+    \vspace{-5pt} % Adjust this value as needed to reduce space
+    \caption{This schematic illustrates potential modifications to temperature (\emph{T}) and salinity (\emph{S}) in the ocean through water mass transformation (WMT). Arrows indicate the direction and processes driving WMT, while shaded regions represent the volume distribution within \emph{T}--\emph{S} space. Epineutral action occurs along the density surfaces, shown as gray lines.}
+    \label{fig:TS_example}
+\end{figure}
+
 % state of the art/history of literatutre
 Substantial effort has been undertaken to develop a WMT framework for the ocean in tracer coordinates. By the conservation equations in tracer coordinates, \citeA{Walin_1977} and \citeA{Walin1982} demonstrated how water mass transformation and ocean circulation patterns can be inferred from surface fluxes and interior mixing. \citeA{Walin_1977} studied estuarine systems, and using salinity as a tracer, derived the relationship between volume transport across isohaline surfaces and salt forcing due to surface fluxes and mixing. In a subsequent paper, \citeA{Walin1982} applied temperature as a tracer, formulating volume and heat conservation relations to study the effects of advective and diffusive heat fluxes on the temperature distribution of the ocean. These two papers thus laid the foundation for descriptions of WMT in tracer--not geographic--coordinates, enabling water mass formation calculations from air-sea fluxes. \citeA{Speer1993} generalized the \citeA{Walin_1977, Walin1982} framework to use \emph{S} and \emph{T} coordinates simultaneously, using the continuity equations to show how the thermodynamic budgets for heat and freshwater can be used to describe WMT due to heat and freshwater fluxes. His work used a two-dimensional vector $(\mathbf{J})$ to describe the conversion rate of one water mass into another:
 
@@ -415,32 +421,77 @@ Guided by previous work, we aim to quantify the relative contributions of surfac
 
 \section{Methodology}\label{methods}
 
+
+\subsection{Model Description}
+
+% What is ASTE and why are we using it
+We employ the Arctic Subpolar gyre sTate Estimage (ASTE), a high-resolution, data constrained ocean-sea ice model derived from the Massachusetts Institute of Technology general circulation model (MITgcm). The MITgcm solves the primitive equations using re-scaled $z^*$ coordinates, a vertical coordinate system that adjusts for free-surface variations by redistributing grid spacing to preserve computational efficiency and accuracy, with a fully non-linear free surface, enabling precise simulation of oceanic and cryospheric dynamics \cite{campin2008}. The sea ice model in the MITgcm is dynamic-thermodynamic, in that it accounts for both the physical movement of ice due to forces like winds, currents, and interactions with ice floes, as well as energy exchanges with the ocean and atmosphere. This model builds upon the frameworks developed by \citeA{Menemenlis2005} and \citeA{Losch2010}, which provide the foundation for coupling ocean and sea ice dynamics, to accurately model the growth, melt, and transport of sea ice. In addition explicitly defined large-scale processes, ASTE includes paramaterizations which replace processes that are too small-scale or complex to be physically represented. The isopycnal mixing paramaterization, based on \citeA{Redi1982}, describes how tracers like \emph{T} and \emph{S} are mixed along isopycnals. Eddy-induced tracer transport paramaterization, introduced by \citeA{Gent1990}, models the effects of mesoscale eddies on tracer distributions. Instead of resolving these eddies directly, this parameterization approximates their impact as additional diffusion and advection, effectively redistributing heat, salt, and other tracers vertically and horizontally. It also employs the nonlocal K-Profile Parameterization (KPP) scheme of \citeA{Large1994}, which unifies several vertical mixing processes in the ocean. KPP accounts for mixing in the interior, influenced by shear instability and internal wave activity, and enhanced mixing in the surface boundary layer driven by buoyancy and momentum fluxes. This approach enables a physically consistent match between the surface boundary layer and the ocean interior, incorporating both local (gradient-driven) and nonlocal (bulk-driven) contributions to vertical mixing, which has been validated against observations \citeA{large1997}. Together, these parameterizations ensure that the model captures the physics of ocean and sea ice, providing a robust framework for studying Arctic and sub-Arctic dynamics.
+
+% grid and BC and basics
+ASTE employs the LLC-270 grid configuration, which transitions from a latitude-longitude grid at low latitudes to a polar-cap topology, offering a nominal resolution of $\frac{1}{3}^\circ$ This corresponds to nominal grid spacings of ~16 km in the Nordic Seas and ~14 km in the Arctic interior. The model domain spans the Atlantic north of 32.5$^\circ S$, the Arctic Ocean, and marginal seas, with 50 vertical layers ranging from ~10 m at the surface to 500 m at depth. Observational bathymetry is integrated using partial cells to enhance the accuracy of seafloor representation, crucial for simulating transport along ridges and through seafloor canyons. Boundary conditions are prescribed from the global ECCOv4r3 solution, which assimilates satellite and in-situ observations to ensure consistency with large-scale oceanographic constraints. Atmospheric forcing is applied using bulk formulae with inputs from the JRA-55 reanalysis. The representation of temperature and salinity in the model incorporates parameterizations for turbulent mixing and eddy-driven transport, ensuring these processes are realistically accounted for despite being unresolved at the model's grid scale \citeA{Nguyen2021}.
+
+% constraints and the importance of budget closure
+ASTE is constrained by over $10^9$ satellite and in-situobservations between 2002 and 2017, minimizing a cost function to align model outputs with real-world data. The state estimation employs adjoint modeling to iteratively optimize input parameters and initial conditions, ensuring adherence to conservation laws. This rigorous approach enables the closure of budgets for heat, salt, mass, and momentum at the grid scale, meaning all sources, sinks, and transports of these quantities are explicitly accounted for in the model. Unlike other reanalysis products, ASTE ensures that no term is omitted or underestimated, providing a consistent and physically complete representation of oceanic processes that allows for detailed and reliable diagnostics of the system.
+
+\subsection{The Adjoint Method}
+
 % motivation for the adjoint method
 One purpose of this study is to attribute recently observed changes in ocean heat transport (OHT) through the BSO to past variations in surface wind, thermal, and freshwater forcing. Here, attribution refers to identifying the specific dynamical processes responsible for identifiable changes in the system. This can be achieved through sensitivity analysis, a technique that determines how variations in input variables, such as surface forcing, influence a quantity of interest, such as OHT. The traditional approach to performing attribution in an ocean model involves running an ensemble of forward model simulations, where the system evolves forward in time based on the initial control variables with different perturbations to the surface forcing, and analyzing how these changes affect the quantity of interest. This process helps identify sensitivities--the gradients of the quantity of interest with respect to inputs--which show how the output responds to variations in those inputs. However, in a state-of-the-art ocean model such as the MITgcm, the vast number of possible perturbations makes it computational expensive and technically challenging to run and process a sufficiently large ensemble for comprehensive sensitivity analysis. Instead, we employ the adjoint method, which efficiently computes the sensitivity of our quantity of interest--in this case, OHT through the BSO--to all possible surface forcing inputs simultaneously. This approach eliminates the need to run a large ensemble of forward model simulations with different inputs, providing clear insights into the causal mechanisms of heat transport variation by propagating sensitivies backward through the model. The resulting sensitivity maps reveal how perturbations in surface wind stress, heat flux, and freshwater flux across different regions influence ocean heat transport through the BSO.
 
 % what is the adjoint method
 To better understand how the adjoint method achieves this, it is useful to outline how the technique works in the context of ocean modeling. The cost function, or objective function, represents a scalar quantity of interest. Examples include the strength of the Atlantic Meridional Overturning Circulation (AMOC) at a specific latitude \cite{Pillar2016,Smith2019} or volumetric throughflow through a specific gate \cite{Nguyen2020}. In this study, we define OHT through the BSO as our cost function. The adjoint method computes the gradients of the cost function with respect to model inputs (control variables) by leveraging the forward model and automatic differentiation (AD). AD applies the chain rule to the forward model to derive both the tangent linear model (TLM) and the adjoint model. For example, in a model run with two time steps, $t_1$ and $t_2$, the TLM computes the partial derivatives of the state at $t_2$ with respect to the state at $t_1$. This describes how small perturbations in the control variables propagate forward in time, which is mathematically represented by the Jacobian matrix containing these partial derivatives. To compute the gradient of the cost function, the adjoint model--derived through AD of the forward model--propagates sensitivities backward in time using the transpose of the Jacobian matrix. Essentially, this process starts with the gradient of the cost function at $t_2$ and propagates it back to $t_1$. The result is the gradient of the cost function with respect to the control variables, obtained in a single adjoint run. With more time steps, this backward propagation allows us to trace how sensitivities evolve over time, providing insight into the timescales of sensitivity and revealing how perturbations at different times influence the cost function. At each time step, the adjoint model calculates how small changes in the control variables (e.g., heat flux, wind stress) influence the final cost function. This produces sensitivity maps that illustrate the extent to which perturbations in specific regions and inputs impact the cost function. 
 
-\subsection{Model Description}
+\section{Projects}
 
-Here talk about ASTE
-
-\subsection{WMT in a \emph{T}--\emph{S} Framework}
-
-Here we will describe the basic equations of the T--S framework, including basic budgeting equations
-
-% why is our budget analysis unique
-
-% what is budget analysis
-
-% INCLUDE the equations for this
-
-% FIGURE 3: demonstrate budget analysis in T--S space
+\subsection{Project 1: Investigating Causes of Heat Accumulation in the Barents Sea}
 
 % FIGURE 4: for the 5 years; motivate this with figure 1 (SI extent timeseries)
 % goal of this is to show that the advective term is changing over time as a contribution to heating and salting
 
-\section{Results}
+Figure~\ref{fig:sample_wmt} illustrates the water mass transformation (WMT) tendencies in the Barents Sea for 2014, decomposed into various contributors: (A) Observed tendency, (B) Advection tendency, (C) Diffusion tendency, (D) KPP tendency, (E) Surface forcing tendency, and (F) Sum of all tendencies. Each panel displays the transformation in temperature-salinity (\emph{T}--\emph{S}) space, with the background color representing log-transformed volume fluxes ($\log_10$ of $m^3/^\circ C/PSU$). The overlaid quivers denote the transformation rates, with arrow lengths scaled to indicate magnitude. This decomposition provides a comprehensive view of how different processes drive water mass changes in \emph{T}--\emph{S} space, highlighting the interplay of advection, diffusion, and surface forcing in modifying stratification and water properties.
+
+    \begin{wrapfigure}{l}{0.8\textwidth} % 'r' for right, '0.5\textwidth' for width
+    \centering
+    \includegraphics[width=\linewidth]{figs/BarentsS_alltend_2014.png}
+    \caption{\emph{T}-\emph{S} diagrams from ASTE Release 1 for the year 2014 in the Barents Sea, showing the net transformation calculated from the change in \emph{T} and \emph{S} over time (A), which is broken down into components due to advective (B), diffusive (C), KPP (D), and surface (E) fluxes. The sum of B-E is shown in F, which is equivalent to A.}
+    \label{fig:sample_wmt}
+    \end{wrapfigure}
+
+The total tendencies (Fig.~\ref{fig:sample_wmt}A) are derived from the rates of change in temperature ($\frac{dt}{dT}$) and salinity ($\frac{dt}{dS}$), normalized by the bin widths in \emph{T} and \emph{S}. Figure~\ref{fig:sample_wmt}B demonstrates that advective fluxes primarily increase the temperature and salinity of the Barents Sea, driven by the inflow of Atlantic Water (AW) through the Barents Sea Opening. Diffusive fluxes (Fig.\ref{fig:sample_wmt}C) act to homogenize water masses, redistributing cold, fresh water and warm, salty water towards intermediate values of \emph{T} and \emph{S}. Surface fluxes (Fig.\ref{fig:sample_wmt}E) predominantly transform Atlantic Water into cooler states, while KPP mixing (Fig.~\ref{fig:sample_wmt}D) operates along the freezing line, warming the water in this region.
+
+Finally, the combined tendencies (Fig.\ref{fig:sample_wmt}F) represent the sum of the individual contributions from advection, diffusion, surface fluxes, and KPP mixing (Figs.\ref{fig:sample_wmt}B--E). The absence of residuals in ASTE ensures that the total tendencies (Fig.~\ref{fig:sample_wmt}A) are perfectly reconstructed by this decomposition, confirming the conservation of heat and salt in the model.
+
+
+\subsection{Project 2: Broader Impacts on the Eastern Arctic}
+
+
+
+\subsection{Project 3: Dynamical Attribution to Ocean Heat Transport Through the BSO}
+
+\section{Work plan}
+    The Ph.D. program was started in Fall 2023. Anticipating the defense in Fall 2027 and taking  the degree timeline will resemble the following:
+
+    \begin{enumerate}
+        \item \textbf{Coursework, literature review, and preparing budgeting scripts:} Fall 2023 -- Spring 2024
+
+        Deliverable: Python scripts to perform budget analysis in ASTE
+        
+        \item \textbf{Project 1:} Fall 2024 -- Spring 2025
+        
+        Deliverable: publication on the configuration of budget analysis tools to study changes to the Barents Sea, with a focus on heat content changes
+        
+        \item \textbf{Project 2:} Spring 2025 -- Summer 2026
+
+        Deliverable: publication synthesizing the influence of internal mixing versus surface forcing on the changes to the Arctic Ocean heat transport 
+
+        \item \textbf{Project 3:} Summer 2026 -- Summer 2027
+
+        Deliverable: publication on adjoint sensitivity to synthesize the impacts of atmospheric variability on OHT through the BSO
+
+        \item \textbf{Ph.D. Thesis:} Fall 2027
+
+        Deliverable: Thesis
+    \end{enumerate}
 
 % FIGURE 5: highlight the convergence anomalies for the five years; compare this to figure 2 with the vertical stratification (redistribution away from the center to make a more average looking profile)
 % focus on the one month (march) or maybe take a winter average motivated by the literature, use this for 2012 and 2014 to show that less sea ice -- less stratification -- redistribution of water away from the mixing line
