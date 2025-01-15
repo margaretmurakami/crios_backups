@@ -18,6 +18,8 @@
 \usepackage{soul}
 \usepackage{wrapfig}
 \usepackage{amsmath}
+\setlength{\parskip}{0.1mm}
+
 
 
 \linenumbers
@@ -487,26 +489,27 @@ In the WMT framework, the convergence or divergence of transformation vectors re
 \subsection{Project 2: Broader Impacts on the Eastern Arctic}
 
 % motivation and structure
-The goal of this second project is to investigate changes in ocean heat transport (OHT) and vertical mixing in the Eastern Arctic through the WMT framework, focusing on their evolution over time and their contribution to Arctic stratification. The Eurasian Basin is typically covered with sea ice year-round, and melting occurs primarily from solar radiation at the surface. However, the extent and thickness of this ice have been declining in recent decades due to warming and increased solar radiation during summer. River runoff from Siberia and melting sea ice contribute freshwater to the surface, enhancing the stratification that maintains the halocline. The halocline, characterized by a sharp increase in salinity with depth while temperatures remain near freezing, is primarily sustained by the lateral advection of dense, saline water formed on the Arctic shelves during winter freezing and brine rejection \cite{aagaard1981}. This maintains the beta ocean structure of this region, wherein a surface mixed layer (SML) overlies the halocline, overlies a layer of AW and deep basin waters. The halocline largely shields the Arctic ice cover by limiting upward heat flux from the Atlantic layer as it propagates along the continental shelf of the East Arctic. Conversely, it serves as a heat sink for the Atlantic Water, contributing to its cooling and freshening \cite{aagaard1981}. Until recently, AW heat was not considered as a major factor for sea ice melt, but recent studies suggest it is an important heat source for vertical mixing induced melt \cite{Carmack2007,Polyakov2017}.
+The goal of this project is to focus on the Eastern Arctic and apply the WMT framework to investigate changes in ocean heat transport (OHT) and vertical mixing, emphasizing their evolution over time and contributions to Arctic stratification. The Eurasian Basin, historically covered by sea ice year-round \cite{Kwok2018}, has experienced a significant decline in multiyear ice extent \cite{Perovich2009,perovich2011} and thickness \cite{Polyakov2012,Kwok2018} in recent decades. Melting in the surface mixed layer (SML) is primarily driven by solar radiation \cite{perovich2007}, with additional freshwater input from Siberian river runoff and melting sea ice enhancing stratification and maintaining the halocline \cite{aagaard1981}. This halocline, characterized by a sharp vertical salinity gradient and near-freezing temperatures, is sustained by the lateral advection of dense, saline water formed on Arctic shelves during winter freezing and brine rejection \cite{aagaard1981}. Historically, the halocline has insulated the SML from warmer Atlantic Water (AW) below, limiting upward heat flux and protecting sea ice \cite{aagaard1981}. However, as the climate shifts, recent studies suggest that AW heat plays an increasingly important role in driving sea ice melt and altering Arctic stratification, raising questions about its long-term impacts on sea ice budgets and oceanic structure \cite{Carmack2007,Carmack2015,Polyakov2017}.
 
 
 % structure of the East Arctic and how it is changing
-Atlantification and the Eastern Arctic
-The stratification of the Eastern Arctic is 
+Even small shifts in ocean heat transport can significantly impact the sea ice mass balance by enhancing basal melting \cite{Carmack2015}. The result of shifting inflows from the Atlantic is Atlantification \cite{Polyakov2017}, the eastward expansion of AW characteristics, including warmer and saltier conditions as well as weaker salt stratification, into the previously colder and more stratified Eurasian Basin. Historically confined to the western Eurasian Basin near Fram Strait, Atlantification is linked to declining sea ice coverage and thickness, which weaken the halocline and facilitate vertical mixing and greater upward heat flux from AW \cite{Polyakov2017}. Polyakov et al. (2019) further highlighted the role of double-diffusive layering in mediating vertical heat fluxes through the halocline, amplifying the influence of Atlantic inflows on Arctic stratification and sea ice loss. Additionally, intensified wind-driven near-surface currents and vertical shear in ice-free areas have further enhanced turbulent mixing in the eastern Eurasian Basin, accelerating sea ice decline. Together, these processes demonstrate how Atlantic inflows increasingly shape the stratification and heat budgets of the Eastern Arctic.
 
-Building on the foundational work of
-\citeA{Polyakov2017,polyakov2019,Polyakov2020}, which highlighted the critical role of Atlantic Water in warming the Arctic Ocean and weakening the halocline, this study aims to quantify the processes driving these changes. 
-
-Polyakov's findings on the interplay between double-diffusive convection, turbulent mixing, and the redistribution of Atlantic heat provide a compelling framework for examining how vertical heat transport influences surface conditions and ice melt. By analyzing both long-term trends and seasonal variability, this project seeks to disentangle the relative contributions of OHT and vertical mixing to the observed Atlantification of the Eastern Arctic, providing new insights into the mechanisms shaping the region's response to a changing climate.
 
 % return to the goal of this project - what are we trying to do
 
 \subsection{Project 3: Dynamical Attribution to Ocean Heat Transport Through the BSO}
 
 % purpose of this project
-The third project will build upon the previous two projects to study attribution to heat OHT through the BSO.
+The BSO serves as a crucial gateway for ocean heat transport (OHT) into the Arctic Ocean, significantly influencing the heat budget of both the Barents Sea \cite{Ingvaldsen2002, Arthun2012} and the Arctic Ocean \cite{Oldenburg2024}. Increased OHT has been linked to the northward spread of warmer water \cite{Smedsrud2010} and increased surface heat fluxes \cite{Smedsrud2013} in the Barents Sea. The temperature of inflowing water and the total heat transport through the BSO have increased in recent decades \cite{muilwijk2018, Wang2019, Arthun2019}. The causes of this change have been explored in several studies. \citeA{Arthun2012} demonstrated that variability in BSO OHT is closely tied to wind strength over the Barents Sea, which reduces sea ice coverage and facilitates greater heat inflows. The North Atlantic Oscillation (NAO) has also been identified as a key driver, with its positive phase enhancing alongshore winds along the Norwegian coast, leading to increased BSO transport \cite{Ingvaldsen2002}. However, the influence of the NAO is not always dominant; \citeA{Heukamp2023} highlighted that local atmospheric circulation patterns can temporarily override NAO-driven variability in BSO transport. Additionally, wind stress curl has been shown to modulate or even override the effects of the NAO, emphasizing the importance of considering both large-scale atmospheric patterns and regional processes in understanding OHT variability \cite{muilwijk2018}.
 
-The BSO is an important site for heat transport to the Arctic Ocean. The purpose of the third and final project will be to attribute OHT through the BSO to past variations in surface wind, thermal, and freshwater forcing. To do this, we will utilize the adjoint method to.
+% goals of this and what we expect to find
+The third project will build upon the previous two projects to attribute recently observed variability in OHT through the BSO to past surface, wind, and freshwater forcing. Here, we define the cost function as OHT across the BSO. The goal is to leverage the adjoint method to conduct efficient sensitivity analysis. Rather than generating an ensemble of forward-model simulations with perturbed initial conditions, we will utilize the adjoint method to calculate gradients that link OHT across the BSO to upstream and external forcing factors. Beyond the technical challenges of implementing such a large-scale investigation, efforts to pinpoint causal mechanisms often rely on statistical correlations between OHT and atmospheric forcing, which can obscure clear dynamical insights into the processes driving heat transport variability.
+
+% what process are we following
+Previous applications of the adjoint method to study AMOC sensitivity provide a valuable framework for this investigation. Early work, such as \citeA{marotzke1999heat}, demonstrated the ability to diagnose the sensitivity of northward heat transport to initial conditions and forcing perturbations. Subsequent studies expanded upon this foundation, exploring volume transport pathways and their relation to large-scale ocean dynamics \cite{marotzke1999, bugnion2006, czeschel2010, pillar2016}. In this context, our approach focuses on the BSO as a critical gateway for heat exchange between the North Atlantic and the Arctic. By applying the adjoint method to a high-resolution ocean model, we aim to attribute observed variability in BSO heat transport to specific forcing mechanisms, enabling a clearer understanding of the dynamical processes that modulate Arctic warming and sea ice retreat.
+
+
 
 \section{Work plan}
     The Ph.D. program was started in Fall 2023. Anticipating the defense in Fall 2027 and taking  the degree timeline will resemble the following:
@@ -700,12 +703,12 @@ The BSO is an important site for heat transport to the Arctic Ocean. The purpose
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section*{Open Research Section}
-The ASTE\_R1 model configuration, inputs, and monthly and daily outputs are available at the Arctic Data Center (https://arcticdata.io).
+% \section*{Open Research Section}
+% The ASTE\_R1 model configuration, inputs, and monthly and daily outputs are available at the Arctic Data Center (https://arcticdata.io).
 
 
-\acknowledgments
-Enter acknowledgments here. This section is to acknowledge funding, thank colleagues, enter any secondary affiliations, and so on.
+% \acknowledgments
+% Enter acknowledgments here. This section is to acknowledge funding, thank colleagues, enter any secondary affiliations, and so on.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
