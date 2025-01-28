@@ -578,21 +578,40 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
 
     # create the bins of TS data
     # try new T bins where different sizes
-    refined_section = np.linspace(-3,12,93-30)
-    coarse_section = np.linspace(12,15,21+30,endpoint=False)
-    binsTH_edges = np.concatenate((refined_section,coarse_section[1:]))
+    # refined_section = np.linspace(-3,12,93-30)
+    # coarse_section = np.linspace(12,15,21+30,endpoint=False)
+    # binsTH_edges = np.concatenate((refined_section,coarse_section[1:]))
+    # binsTH_centers = (binsTH_edges[:-1] + binsTH_edges[1:])/2
+    # nT = binsTH_edges.shape[0]-1
+    
+    # # do bi-sectional form for S
+    # coarse_section = np.linspace(0, 28, 30, endpoint=False)
+    # refined_section = np.linspace(28, 40, 83)
+    # binsSLT_edges = np.concatenate((coarse_section, refined_section))
+    # binsSLT_centers = (binsSLT_edges[:-1] + binsSLT_edges[1:])/2
+    # nS = binsSLT_edges.shape[0]-1
+    
+    # Tbin,Sbin = np.meshgrid(binsTH_edges,binsSLT_edges)
+    # Tbincent,Sbincent = np.meshgrid(binsTH_centers,binsSLT_centers)
+    
+    # binwidthT = binsTH_edges[1:] - binsTH_edges[:-1]
+    # binwidthS = binsSLT_edges[1:] - binsSLT_edges[:-1]
+    # dT,dS = np.meshgrid(binwidthT,binwidthS)
+    # dT = dT.reshape(112,112,1)
+    # dS = dS.reshape(112,112,1)
+    # Paths for the bins in this run
+    copypath = "/scratch/mmurakami/ASTE_270/LAYERS_copies/"
+    filename = "layers2TH"
+    boundsT = rdmds(copypath + filename)
+    binsTH_edges = boundsT.reshape(boundsT.shape[0])
     binsTH_centers = (binsTH_edges[:-1] + binsTH_edges[1:])/2
     nT = binsTH_edges.shape[0]-1
     
-    # do bi-sectional form for S
-    coarse_section = np.linspace(0, 28, 30, endpoint=False)
-    refined_section = np.linspace(28, 40, 83)
-    binsSLT_edges = np.concatenate((coarse_section, refined_section))
+    filename = "layers1SLT"
+    boundsS = rdmds(copypath + filename)
+    binsSLT_edges = boundsS.reshape(boundsS.shape[0])
     binsSLT_centers = (binsSLT_edges[:-1] + binsSLT_edges[1:])/2
     nS = binsSLT_edges.shape[0]-1
-    
-    Tbin,Sbin = np.meshgrid(binsTH_edges,binsSLT_edges)
-    Tbincent,Sbincent = np.meshgrid(binsTH_centers,binsSLT_centers)
     
     binwidthT = binsTH_edges[1:] - binsTH_edges[:-1]
     binwidthS = binsSLT_edges[1:] - binsSLT_edges[:-1]
@@ -611,7 +630,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     binned_salinity[binned_salinity == nS] = np.nan
 
 
-    maskArc = mskBasin * mymsk
+    maskArc = mskBasin * mymsk   # this is somewhat redundant and we are not actually using iB below
 
     binwidthsS_tile = np.tile(binwidthS, (112, 1)).T
     binwidthsT_tile = np.tile(binwidthT, (112, 1))
