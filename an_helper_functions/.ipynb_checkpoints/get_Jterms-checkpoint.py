@@ -331,12 +331,12 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     ADVy_TH,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[1])
     DFxE_TH,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[2])
     DFyE_TH,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[3])
-    UVELMASS,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[4])
-    VVELMASS,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[5])  # m/s
+    # UVELMASS,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[4])
+    # VVELMASS,its,meta = rdmds(os.path.join(dirIn, file_name),t2,returnmeta=True,rec=recs[5])  # m/s
     
     # reshape the UVELMASS and VVELMASS to look at these
-    UVELMASS = UVELMASS.reshape(nz,ny,nx)
-    VVELMASS = VVELMASS.reshape(nz,ny,nx)
+    # UVELMASS = UVELMASS.reshape(nz,ny,nx)
+    # VVELMASS = VVELMASS.reshape(nz,ny,nx)
     
     tmpUo = myparms['rcp'] * (ADVx_TH + DFxE_TH)
     tmpVo = myparms['rcp'] * (ADVy_TH + DFyE_TH)
@@ -529,34 +529,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     #print("volume allocation shape",vol.shape)
     
     for t in range(len(tsstr)):
-        t1 = tsstr[t]
-        read = [int(t1)]
-    
-        # make sure order we write the variables is the same as the order in varnames, else we read the wrong thing
-        ETAN,its,meta = rdmds(os.path.join(dirIn, file_name),read,returnmeta=True,rec=recs[0])
-    
-        # choose by basin
-        ETAN = np.reshape(ETAN,(ny,nx))
-    
-        # ocean
-        if debug:
-            print(read,its[0],its[1]) # these iteration numbers should be the same as read
-    
-        # 3D, with rStar:
-        tmpvol = np.zeros((nz, ny, nx))
-        if myparms['useNLFS'] < 2 or myparms['rStar'] == 0:        # not this time
-            tmpvol[0,:, :] = ETAN * myparms['rhoconst'] * RAC
-            if myparms['useRFWF'] == 0:
-                tmpvol[0, :, :] = np.zeros((ny, nx))
-        else:    # 4/22 look at this one
-            if myparms['useRFWF'] != 0:                                 # we are using this  # check if tmp1 is the same as drf3d!!
-                tmp1 = mk3D_mod(mygrid['DRF'],hfC) * hfC     # m
-                tmp2 = tmp1/mk3D_mod(DD,tmp1)                # drf as a fraction of total depth, this allows us to distribute etan between z
-            else:
-                tmp2 = drf3d / mk3D_mod(DD, tmp1)
-    
-            # this is still wrong, we want to subtract the ETAN anomaly from the existing volumes
-            tmpvol =  (tmp1 + tmp2*mk3D_mod(ETAN, tmp2)) * mk3D_mod(RAC, hfC)     # volume, m * m^2  = m^3
+        tmpvol = np.tile(mygrid['DXG'][np.newaxis,:,:],(50,1,1)) * np.tile(mygrid['DYG'][np.newaxis,:,:],(50,1,1)) * DRF3d
     
         vol[t,:,:,:] = tmpvol * np.tile(mymsk, (nz, 1, 1))
     #######
