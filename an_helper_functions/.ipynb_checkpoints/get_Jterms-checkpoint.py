@@ -29,7 +29,7 @@ from binning import *                    # bin_array, create_mesh
 
 exec(open("/home/mmurakami/crios_backups/an_helper_functions/prep_grid.py").read())
 
-def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
+def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dstart=0,dterm=50):
     '''
     The goal of this will be to return the arrays JtermsT and JtermsS for one month, as well as JtermsT and S without normalizing by binwidths
 
@@ -546,8 +546,17 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     THETA,its,meta = rdmds(os.path.join(dirState, file_name),t2,returnmeta=True,rec=recs[0])
     SALT,its,meta = rdmds(os.path.join(dirState, file_name),t2,returnmeta=True,rec=recs[1])
     
-    THETA = THETA.reshape(nz,ny,nx)
-    SALT = SALT.reshape(nz,ny,nx)
+    THETA = THETA.reshape(nz,ny,nx) * np.tile(mymsk[np.newaxis,:,:],(nz,1,1))
+    SALT = SALT.reshape(nz,ny,nx) * np.tile(mymsk[np.newaxis,:,:],(nz,1,1))
+    # do masking
+    if dstart > 0:
+        THETA[:dstart] = np.nan
+        SALT[:dstart] = np.nan
+        THETA[dterm:] = np.nan
+        SALT[dterm:] = np.nan
+    else:
+        THETA[dterm:] = np.nan
+        SALT[dterm:] = np.nan
 
     # create the bins of TS data
     # try new T bins where different sizes
@@ -637,7 +646,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     for i,j in zip(ys,xs):
     
         # loop through the z values and see if we can plot
-        for k in range(dterm-1):                 # stop at second to last level for 
+        for k in range(dstart,dterm-1):                 # stop at second to last level for 
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
     
@@ -676,7 +685,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     for i,j in zip(ys,xs):
     
         # loop through the depths and add
-        for k in range (dterm-1):
+        for k in range (dstart,dterm-1):
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
         
@@ -718,7 +727,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     for i,j in zip(ys,xs):
     
         # loop through the z values and see if we can plot
-        for k in range(dterm-1):                 # stop at second to last level for 
+        for k in range(dstart,dterm-1):                 # stop at second to last level for 
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
     
@@ -756,7 +765,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dterm=50):
     for i,j in zip(ys,xs):
     
         # loop through the depths and add
-        for k in range (dterm-1):
+        for k in range (dstart,dterm-1):
             iTpt = int(binned_theta[k,i,j])
             iSpt = int(binned_salinity[k,i,j])
         
