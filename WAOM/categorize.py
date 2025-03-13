@@ -242,6 +242,7 @@ def wmt_categorize2(temp,salt,depth,aabw,mcdw,isw,dsw,aasw,ww,msw):
 # Load your input NetCDF file
 input_filename = "/scratch/mmurakami/WAOM/drifter_data_all_withdepth.nc"  # Change to actual file
 output_filename = "/scratch/mmurakami/WAOM/categorized.nc"
+test = 10
 
 with nc.Dataset(input_filename, "r") as ds:
     temp = ds.variables["temp"][:]  # Adjust variable names
@@ -266,13 +267,17 @@ for i in range(num_rows):
 
     categorized_arr[i] = wmt_categorize2(temp[i], salt[i], depth[i], aabw, mcdw, isw, dsw, aasw, ww, msw)
 
+# Open input file and store dimensions BEFORE closing it
+with nc.Dataset(input_filename, "r") as ds_in:
+    input_dimensions = {dim_name: len(dim) if not dim.isunlimited() else None for dim_name, dim in ds_in.dimensions.items()}
+    temp_dimensions = ds_in.variables["temp"].dimensions  # Store dimensions safely
+
 # Save to NetCDF
 with nc.Dataset(output_filename, "w", format="NETCDF4") as ds_out:
-    with nc.Dataset(input_filename, "r") as ds_in:
-        for dim_name, dim in ds_in.dimensions.items():
-            ds_out.createDimension(dim_name, len(dim) if not dim.isunlimited() else None)
+    for dim_name, dim_length in input_dimensions.items():
+        ds_out.createDimension(dim_name, dim_length)
 
-    categorized_var = ds_out.createVariable("categorized", "i4", ds_in.variables["temp"].dimensions)
+    categorized_var = ds_out.createVariable("categorized", "i4", temp_dimensions)
     categorized_var[:] = categorized_arr
     categorized_var.units = "category index"
     categorized_var.description = "Categorized water masses"
