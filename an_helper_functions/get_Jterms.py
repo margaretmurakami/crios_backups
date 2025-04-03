@@ -792,4 +792,4 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dstart=0,d
     print("total residual",np.nansum(JtermsS[0] - JtermsS[1] - JtermsS[2] - JtermsS[3] - JtermsS[4]),"Sv")
 
     ###########
-    return(vol_mesh,JtermsT,JtermsS,JtermsT_nn,JtermsS_nn)
+    return(vol_mesh,JtermsT,JtermsS,JtermsT_nn,JtermsS_nn,bT,bS)

@@ -493,7 +493,7 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dstart=0,d
     tmpadv = np.full((nz,ny,nx),np.nan)
     tmpadv[:-1,:,:] = (trWtopADV[:-1] - trWtopADV[1:])              # for surface thru seafloor
     
-    Tconv = budgO['heatfluxes']['ADV_hconv'] + tmpadv
+    Tconv = budgO['heatfluxes']['ADV_hconv'] + tmpadv   # hconv + zconv
     budgO['heatfluxes']['ADV_Tconv'] = Tconv      # J/s, this is the advective arrow of T for a cell
 
     # do vertical convergence for ADV and DF terms
@@ -792,4 +792,4 @@ def get_Jterms(fnames,tsstr,datetimes,dt,t2,mymsk,iB,RAC,RAC3,myparms,dstart=0,d
     print("total residual",np.nansum(JtermsS[0] - JtermsS[1] - JtermsS[2] - JtermsS[3] - JtermsS[4]),"Sv")
 
     ###########
-    return(vol_mesh,JtermsT,JtermsS,JtermsT_nn,JtermsS_nn)
+    return(vol_mesh,JtermsT,JtermsS,JtermsT_nn,JtermsS_nn,bT,bS)
