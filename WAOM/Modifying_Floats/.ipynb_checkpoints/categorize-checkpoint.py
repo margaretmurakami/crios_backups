@@ -94,23 +94,33 @@ a = sg.Polygon(v)
 b = sg.Polygon(b)
 mcdw = a.intersection(b)
 
-# find the dsw values
-cs = ax.contourf(si, ti, dens2, levels=[27.82,31],colors="black", zorder=1,alpha=0,linestyles='-.')
+# --- DSW Polygon ---
+# Extract density contour polygon
+cs = ax.contourf(si, ti, dens2, levels=[27.82, 31], colors="black", zorder=1, alpha=0, linestyles='-.')
 p = cs.collections[0].get_paths()[0]
 v = p.vertices
 a = sg.Polygon(v)
-# ftmax = Freez_temp+0.1
-# ftmin = Freez_temp-0.5
-# ft = np.append(ftmax,np.flip(ftmin))
-# si2 = si.copy()
-# si2 = np.append(si2,np.flip(si2))
-# b = np.array([[a,b] for a,b in zip(si2,ft)])
-sx = np.array([35,35,34.5,34.5])
-sy = np.array([-3,-1.7,-1.7,-3])
-ss = np.array([[a,b] for a,b in zip(sx,sy)])
-b = sg.Polygon(ss)             # second shape in salinity
-#dsw = b.intersection(c)
-dsw = b.intersection(a)
+# DSW polygon boundaries
+ft_upper = Freez_temp + 0.1
+t_lower = -2.5
+# Salinity arrays
+si_upper = si1
+si_lower = si1[::-1]
+# Create polygon
+poly_si = np.concatenate([si_upper, si_lower])
+poly_t = np.concatenate([ft_upper, np.full_like(si_lower, t_lower)])
+polygon_pts = np.column_stack([poly_si, poly_t])
+c = sg.Polygon(polygon_pts)
+
+# Intersection
+dsw_poly = c.intersection(a)
+# Ensure it's a Polygon (not MultiPolygon)
+if dsw_poly.is_empty:
+    dsw = sg.Polygon()
+elif dsw_poly.geom_type == 'Polygon':
+    dsw = dsw_poly
+else:  # MultiPolygon case
+    dsw = max(dsw_poly.geoms, key=lambda g: g.area)  # Take largest part
 
 # find the aasw values
 cs = ax.contourf(si, ti, dens2, levels=[24,27.73],colors="black", zorder=1,alpha=0,linestyles='-.')
@@ -130,20 +140,38 @@ c = sg.Polygon(ta)              # third shape in temperature
 d = b.intersection(c)
 aasw = d.intersection(a)
 
-# find the msw values
-cs = ax.contourf(si, ti, dens2, levels=[27.82,31],colors="black", zorder=1,alpha=0,linestyles='-.')
+# --- mSW Polygon ---
+
+# Extract density contour polygon
+cs = ax.contourf(si, ti, dens2, levels=[27.82, 31], colors="black", zorder=1, alpha=0, linestyles='-.')
 p = cs.collections[0].get_paths()[0]
 v = p.vertices
 a = sg.Polygon(v)
-ft = Freez_temp + 0.1
-ft = np.append(ft,[-0.4,-0.4])
-si2 = si.copy()
-si2 = np.append(si2,[35,31])
-ta = np.array([[a,b] for a,b in zip(si2,ft)])
-c = sg.Polygon(ta)              # third shape in temperature
-#dsw = b.intersection(c)
-msw = c.intersection(a)
-msw = msw.difference(dsw)
+
+# mSW polygon boundaries
+ft_upper = Freez_temp + 0.1
+t_lower = -0.4
+
+# Salinity arrays
+si_upper = si1
+si_lower = si1[::-1]
+
+# Create polygon
+poly_si = np.concatenate([si_upper, si_lower])
+poly_t = np.concatenate([ft_upper, np.full_like(si_lower, t_lower)])
+polygon_pts = np.column_stack([poly_si, poly_t])
+c = sg.Polygon(polygon_pts)
+
+# Intersection
+msw_poly = c.intersection(a).difference(dsw)  # Remove DSW region
+
+# Ensure it's a Polygon (not MultiPolygon)
+if msw_poly.is_empty:
+    msw = sg.Polygon()
+elif msw_poly.geom_type == 'Polygon':
+    msw = msw_poly
+else:  # MultiPolygon case
+    msw = max(msw_poly.geoms, key=lambda g: g.area)  # Take largest part
 
 # add ISW values
 cs = ax.contourf(si, ti, dens2, levels=[25,27.82],colors="black", zorder=1,alpha=0,linestyles='-.')
