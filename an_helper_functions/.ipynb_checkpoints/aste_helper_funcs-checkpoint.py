@@ -8,6 +8,40 @@ import os
 import re
 from operator import mul
 
+def get_iwet_from_mymsk(mymsk: np.ndarray, iwetC2d: np.ndarray) -> np.ndarray:
+    """
+    Return iwet_mine: indices (into the wet-cell list iwetC2d) whose corresponding
+    2D cells are inside mymsk.
+
+    Parameters
+    ----------
+    mymsk : (ny, nx) array
+        Basin/subregion mask. Interpreted as "in mask" where mymsk == 1 and finite.
+        (Works if mymsk is 0/1 or has NaNs.)
+    iwetC2d : (nwet,) int array
+        1D indices (C-order flattening) of wet cells in the global 2D grid.
+
+    Returns
+    -------
+    iwet_mine : (nwet_in_mask,) int array
+        Indices into iwetC2d (NOT global flattened indices). Use iwetC2d[iwet_mine]
+        to get the corresponding global flattened wet-cell indices.
+    """
+    if mymsk.ndim != 2:
+        raise ValueError(f"mymsk must be 2D (ny,nx); got shape {mymsk.shape}")
+
+    # Flatten mask in the same way iwetC2d was built (C-order).
+    mymsk_1d = np.asarray(mymsk).reshape(-1, order="C")
+
+    # Define "in mask": equals 1 (and not NaN).
+    in_mask = np.isfinite(mymsk_1d) & (mymsk_1d == 1)
+
+    # Subselect only wet cells; then find which wet cells are in the mask.
+    wet_in_mask = in_mask[iwetC2d]              # shape (nwet,)
+    iwet_mine = np.flatnonzero(wet_in_mask)     # indices into iwetC2d
+
+    return iwet_mine
+
 class structtype():
     pass
 
