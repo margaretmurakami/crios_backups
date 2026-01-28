@@ -109,6 +109,55 @@ def get_gates3d(ADVx,ADVy,TRACER,nz,ny,nx):
 
     return ADV_west, ADV_FJNZ, ADV_SPFJ, ADV_NZRU, ADV_SPNZ
 
+def get_gates3d_volume(ADVx,ADVy,mygrid,nz,ny,nx):
+
+    # define  the box widths and heights
+    DXG3d = np.tile(mygrid['DXG'][np.newaxis,:,:],(nz,1,1))
+    DYG3d = np.tile(mygrid['DYG'][np.newaxis,:,:],(nz,1,1))
+    DRF3d = np.tile(mygrid['DRF'][:,np.newaxis,np.newaxis],(1,ny,nx))
+
+    # define a function to take some ADV term and x and y, and the tracer field THETA and produce only those filled
+    # define + as into the basin
+    
+    # --- reshape to 3D ---
+    ADVx = ADVx.reshape((nz, ny, nx))   # advective heat flux on x-faces
+    
+    # ---- BSO ----
+    ADV_west = np.zeros((nz, ny, nx))
+    # horizontal faces (u-faces)
+    for j, i in zip(y_bsoh, x_bsoh):
+        # flux through x-face at (j,i) mapped into cell (j,i)
+        ADV_west[:, j, i] += ADVx[:, j, i] * DYG3d[:, j, i] * DRF3d[:, j, i]    # + into basin, m^3/s
+    
+    # vertical faces (v-faces)
+    for j, i in zip(y_bsov, x_bsov):
+        # flux through y-face at (j,i) mapped into cell (j-1,i)
+        ADV_west[:, j-1, i] -= ADVy[:, j, i] * DXG3d[:, j, i] * DRF3d[:, j, i]  # sign chosen so + into basin
+    
+    # ---- FJNZ ----
+    ADV_FJNZ = np.zeros((nz, ny, nx))
+    ADV_FJNZ[:,y_fjnz,x_fjnzv[0]-1] = -ADVx[:, y_fjnz, x_fjnzv[0]] * DYG3d[:, y_fjnz, x_fjnzv[0]] * DRF3d[:, y_fjnz, x_fjnzv[0]]
+    
+    # ---- SPFJ (NZ exit) ----
+    ADV_SPFJ = np.zeros((nz, ny, nx))
+    ADV_SPFJ[:,y_spfjv,x_spfjv-1] -= ADVx[:, y_spfjv, x_spfjv] * DYG3d[:, y_spfjv, x_spfjv] * DRF3d[:, y_spfjv, x_spfjv]
+    ADV_SPFJ[:,y_spfjh-1,x_spfjh] -= ADVy[:, y_spfjh, x_spfjh] * DXG3d[:, y_spfjh, x_spfjh] * DRF3d[:, y_spfjh, x_spfjh]
+    ADV_SPFJ[:,y_spfjb-1,x_spfjb] -= ADVy[:, y_spfjb, x_spfjb] * DXG3d[:, y_spfjb, x_spfjb] * DRF3d[:, y_spfjb, x_spfjb]
+    ADV_SPFJ[:,y_spfjb,x_spfjb-1] -= ADVx[:, y_spfjb, x_spfjb] * DYG3d[:, y_spfjb, x_spfjb] * DRF3d[:, y_spfjb, x_spfjb]
+    
+    # ---- NZRU (small Russia gate) ----
+    ADV_NZRU = np.zeros((nz, ny, nx))
+    
+    for j, i in zip(y_nzruv, x_nzruv):
+        ADV_NZRU[:, j, i-1] -= ADVx[:, j, i] * DYG3d[:, j, i] * DRF3d[:, j, i]  # + into basin
+
+    # later we will need to define a small gate for the midway point through the basin and confirm similarity
+    ADV_SPNZ = np.zeros((nz,ny,nx))  # we can just use +x for this one so it will be easy
+    ADV_SPNZ[:,y_spnz,x_spnz] = ADVx[:, y_spnz, x_spnz] * DYG3d[:, y_spnz, x_spnz] * DRF3d[:, y_spnz, x_spnz]
+    
+
+    return ADV_west, ADV_FJNZ, ADV_SPFJ, ADV_NZRU, ADV_SPNZ
+
 def _bincount_sum_with_nan(idx, vals, nout):
     """
     NaN-aware per-bin sum:
@@ -155,7 +204,7 @@ def gateway3D(ADV_west,ADV_FJNZ,ADV_SPFJ,ADV_NZRU,ADV_SPNZ,tracer,binmidTracer,n
 
 # create the total tendency first
 # from create_layers import create_layersTHETA,create_layersSALT
-def create_layersTHETA(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt):
+def create_layersTHETA(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
     # we want to create dF_Tnew, basically, which contains the information from the layers output mimicked by ASTER1
     # let's just check with ADVh first
     mymsk3d = np.tile(mymsk[np.newaxis,:,:],(nz,1,1))
@@ -378,6 +427,10 @@ def create_layersTHETA(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,
     surf_flat = np.ravel(Ft_surftest* mymsk3d,  order='F')
     kpp_flat = np.ravel(tmpkpp* mymsk3d,  order='F')
     tend_flat = np.ravel(tmptend* mymsk3d,  order='F')
+
+    # if mapping is True, just return the closure terms from before as tracer.m^3/s
+    if mapping:
+        return ADVhT,ADVrT,DFhT,DFrT,Ft_surftest,tmpkpp,tmptend
     
     for i in range(nT-1):
         # MATLAB: ij = find(tmp(:) >= bbb.binmidT(i) & tmp(:) < bbb.binmidT(i+1))
@@ -400,7 +453,7 @@ def create_layersTHETA(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,
     return G_T_offline_new,dF_Tnew  # these will be in units of m^3/s and degC.m^3/s
 
 # manually check create_layersSALT
-def create_layersSALT(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt):
+def create_layersSALT(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
     # do the same as previous but return the values in salt
         # we want to create dF_Tnew, basically, which contains the information from the layers output mimicked by ASTER1
     # let's just check with ADVh first
@@ -644,6 +697,10 @@ def create_layersSALT(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,n
     kpp_flat = np.ravel(tmpkpp* mymsk3d,  order='F')
     tend_flat = np.ravel(tmptend* mymsk3d,  order='F')
     
+    # if mapping is True, just return the closure terms from before as tracer.m^3/s
+    if mapping:
+        return ADVhS,ADVrS,DFhS,DFrS,Ft_surftest,tmpkpp,tmptend
+    
     for i in range(nT-1):
         # MATLAB: ij = find(tmp(:) >= bbb.binmidT(i) & tmp(:) < bbb.binmidT(i+1))
         ij = np.where((S_flat >= binmidS[i]) & (S_flat < binmidS[i + 1]))[0]
@@ -666,7 +723,7 @@ def create_layersSALT(tsstr,mygrid,myparms,dirdiags,dirState,layers_path,mymsk,n
 
 # for each time step, load ADVx and ADVy and THETA and SALT
 
-def gates_check(tsstr,mymsk,half=False):
+def gates_check(tsstr,mymsk,dt,half=False):
 
     t2 = int(tsstr[1])
 
@@ -789,6 +846,8 @@ def gates_check(tsstr,mymsk,half=False):
     Tdict['FJNZ'] = FJNZT_sum
     Tdict['SPFJ'] = SPFJT_sum
     Tdict['NZRU'] = NZRUT_sum
+    if half:
+        Tdict['SPNZ'] = SPNZT_sum
     Tdict['ADVh'] = np.nansum(dF_Tnew[0]) / np.nansum(binwidthT1)
     Tdict['ADVr'] = np.nansum(dF_Tnew[1]) / np.nansum(binwidthT1)
     Tdict['DFh'] = np.nansum(dF_Tnew[2]) / np.nansum(binwidthT1)
@@ -803,6 +862,8 @@ def gates_check(tsstr,mymsk,half=False):
     Sdict['FJNZ'] = FJNZS_sum
     Sdict['SPFJ'] = SPFJS_sum
     Sdict['NZRU'] = NZRUS_sum
+    if half:
+        Sdict['SPNZ'] = SPNZS_sum
     Sdict['ADVh'] = np.nansum(dF_Snew[0]) / np.nansum(binwidthS1)
     Sdict['ADVr'] = np.nansum(dF_Snew[1]) / np.nansum(binwidthS1)
     Sdict['DFh'] = np.nansum(dF_Snew[2]) / np.nansum(binwidthS1)
@@ -818,12 +879,15 @@ def gates_check(tsstr,mymsk,half=False):
     gatesT["FJNZ"] = G_FJNZT / binwidthT1
     gatesT["SPFJ"] = G_SPFJT / binwidthT1
     gatesT["NZRU"] = G_NZRUT / binwidthT1
+    if half:
+        gatesT["SPNZ"] = G_SPNZT / binwidthT1
+
     gatesS = {}
     gatesS["BSO"] = G_BSOS / binwidthS1
     gatesS["FJNZ"] = G_FJNZS / binwidthS1
     gatesS["SPFJ"] = G_SPFJS / binwidthS1
     gatesS["NZRU"] = G_NZRUS / binwidthS1
-    
-
+    if half:
+        gatesS["SPNZ"] = G_SPNZS / binwidthS1
 
     return Tdict,Sdict,G_T_offline_new,G_S_offline_new,gatesT,gatesS
