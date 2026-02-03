@@ -169,7 +169,7 @@ def _bincount_sum_with_nan(idx, vals, nout):
     sums   = np.bincount(idx[finite], vals[finite], minlength=nout).astype(float)
     counts = np.bincount(idx[finite], None, minlength=nout).astype(float)
     out = sums
-    out[counts == 0] = np.nan
+    out[counts == 0] = 0  # set to 0 where contributions are zero (was nan)
     return out
 
 # define a function to turn the gates as 3D into 1D for T and S
