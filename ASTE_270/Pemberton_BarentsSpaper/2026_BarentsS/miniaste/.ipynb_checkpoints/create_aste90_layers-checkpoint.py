@@ -78,7 +78,7 @@ def _mark_points(mask, xs, ys, code, ny, nx, name="gate"):
             mask[j, i] = 3  # overlap with different code
     return mask
 
-def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt):
+def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
     ############################################################
     # define the mask here
     # try to use rdmds
@@ -552,6 +552,20 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     tmptend = tmptend                          # degC.m^3/s
 
     # redefine all the terms as a list from how we did before
+    # if mapping, just return the map of terms as 3D fields
+    if mapping:
+        termsT3D = {}
+        termsT3D["ADVh"] = ADVhT
+        termsT3D["ADVr"] = ADVrT
+        termsT3D["DFhT"] = DFhT
+        termsT3D["DFrT"] = DFrT
+        termsT3D["surf"] = Ft_surftest
+        termsT3D["KPP"] = tmpkpp
+        termsT3D["tend"] = tmptend
+
+        # just return the dict
+        return termsT3D
+        
 
     # define the ADVh total for this mymsk2
     G_T_offline_new = np.zeros((7, nT-1))
@@ -589,7 +603,7 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
 
     return Msum, dF_Tnew
 
-def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt):
+def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
     # do the same copying over but for SALT terms (from the original verification on 12/15)
     ############################################################
     # define the mask here
@@ -1049,6 +1063,20 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     tmptend = (SALTDR - 0) * mk3D_mod(RAC,SALTDR)    # PSU.m/s * m^2 = PSU.m^3/s
 
     # redefine all the terms as a list from how we did before
+    # redefine all the terms as a list from how we did before
+    # if mapping, just return the map of terms as 3D fields
+    if mapping:
+        termsS3D = {}
+        termsS3D["ADVh"] = ADVhS
+        termsS3D["ADVr"] = ADVrS
+        termsS3D["DFhS"] = DFhS
+        termsS3D["DFrS"] = DFrS
+        termsS3D["surf"] = Ft_surftest
+        termsS3D["KPP"] = tmpkpp
+        termsS3D["tend"] = tmptend
+
+        # just return the dict
+        return termsS3D
 
     # define the ADVh total for this mymsk2
     G_S_offline_new = np.zeros((7, nS-1))
