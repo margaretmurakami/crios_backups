@@ -78,7 +78,60 @@ def _mark_points(mask, xs, ys, code, ny, nx, name="gate"):
             mask[j, i] = 3  # overlap with different code
     return mask
 
-def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False,debug=False):
+# add a function to bin to TS space for the gateways
+def bin_gate_by_face_TS_zero(theta_face, salt_face, flux_face,
+                             binmidT, binmidS, nTm1, nSm1):
+    """
+    Bin face flux samples into T-S space.
+
+    Parameters
+    ----------
+    theta_face : 1D array
+        Face-averaged temperature samples.
+    salt_face : 1D array
+        Face-averaged salinity samples.
+    flux_face : 1D array
+        Face flux samples corresponding to (theta_face, salt_face).
+    binmidT : 1D array
+        Temperature bin centers or edges used consistently with searchsorted logic.
+    binmidS : 1D array
+        Salinity bin centers or edges used consistently with searchsorted logic.
+    nTm1 : int
+        Number of T bins in the output.
+    nSm1 : int
+        Number of S bins in the output.
+
+    Returns
+    -------
+    out : 2D array, shape (nTm1, nSm1)
+        Zero-filled T-S binned sum of flux_face.
+    """
+    out = np.zeros((nTm1, nSm1), dtype=float)
+
+    valid = (
+        np.isfinite(theta_face) &
+        np.isfinite(salt_face) &
+        np.isfinite(flux_face)
+    )
+
+    if not np.any(valid):
+        return out
+
+    theta_face = theta_face[valid]
+    salt_face  = salt_face[valid]
+    flux_face  = flux_face[valid]
+
+    iT = np.searchsorted(binmidT, theta_face, side="right") - 1
+    iS = np.searchsorted(binmidS, salt_face,  side="right") - 1
+
+    ok = (iT >= 0) & (iT < nTm1) & (iS >= 0) & (iS < nSm1)
+
+    if np.any(ok):
+        np.add.at(out, (iT[ok], iS[ok]), flux_face[ok])
+
+    return out
+
+def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,boundsT,boundsS, mapping=False,debug=False):
     ############################################################
     # define the mask here
     # try to use rdmds
@@ -165,15 +218,11 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     ############################################################
     # from tsstr, loop through and generate the actual values from the output
 
-    # define the layers
-    filename = "layers2TH"
-    boundsT = rdmds(layers_path + filename)
+    # define the layers -- change this instead to read from function
     binsTH_edges = boundsT.reshape(boundsT.shape[0])
     binsTH_centers = (binsTH_edges[:-1] + binsTH_edges[1:])/2
     nT = binsTH_edges.shape[0]-1
     
-    filename = "layers1SLT"
-    boundsS = rdmds(layers_path + filename)
     binsSLT_edges = boundsS.reshape(boundsS.shape[0])
     binsSLT_centers = (binsSLT_edges[:-1] + binsSLT_edges[1:])/2
     nS = binsSLT_edges.shape[0]-1
@@ -293,11 +342,12 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     y_bso_all = np.array([]).astype(int)
     x_bso_all = np.array([]).astype(int)
 
-    
+    ############################################################################################################
     # --- reshape to 3D ---
     ADVx_TH = ADVx_TH.reshape((nz, ny, nx))   # advective heat flux on x-faces
     ADVy_TH = ADVy_TH.reshape((nz, ny, nx))   # advective heat flux on y-faces
     THETA   = THETA.reshape((nz, ny, nx))     # cell-centered temperature
+    SALT = SALT.reshape((nz, ny, nx))
     
     # ------------------------------------------------------------------
     # 1. Build theta at faces
@@ -306,12 +356,18 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     # x-faces: between (i-1, i) along x
     theta_x = np.zeros_like(ADVx_TH)
     theta_x[:, :, 1:] = 0.5 * (THETA[:, :, 1:] + THETA[:, :, :-1])
-    theta_x[:, :, 0]  = theta_x[:, :, 1]      # simple fill for western boundary
+    theta_x[:, :, 0]  = theta_x[:, :, 1]      # simple fill for western boundary 
+    salt_x = np.zeros_like(ADVx_TH)
+    salt_x[:, :, 1:] = 0.5 * (SALT[:, :, 1:] + SALT[:, :, :-1])
+    salt_x[:, :, 0]  = salt_x[:, :, 1]
     
     # y-faces: between (j-1, j) along y
     theta_y = np.zeros_like(ADVy_TH)
     theta_y[:, 1:, :] = 0.5 * (THETA[:, 1:, :] + THETA[:, :-1, :])
     theta_y[:, 0, :]  = theta_y[:, 1, :]      # simple fill for southern boundary
+    salt_y = np.zeros_like(ADVy_TH)
+    salt_y[:, 1:, :] = 0.5 * (SALT[:, 1:, :] + SALT[:, :-1, :])
+    salt_y[:, 0, :]  = salt_y[:, 1, :]
     
     # ------------------------------------------------------------------
     # 2. Convert heat flux (degC·m^3/s) -> volume flux (m^3/s)
@@ -343,74 +399,97 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     # ------------------------------------------------------------
     
     # ---- BSO ----
-    theta_BSO_list, flux_BSO_list = [], []
+    theta_BSO_list, salt_BSO_list ,flux_BSO_list = [], [], []
     
     for j, i in zip(y_bsoh, x_bsoh):
         theta_BSO_list.append(theta_x[:, j, i].ravel())
+        salt_BSO_list.append(salt_x[:, j, i].ravel())
         flux_BSO_list.append( ADVx_vol[:, j, i].ravel() )
     
     for j, i in zip(y_bsov, x_bsov):
         theta_BSO_list.append(theta_y[:, j, i].ravel())
+        salt_BSO_list.append(salt_y[:,j,i].ravel())
         flux_BSO_list.append( (-ADVy_vol[:, j, i]).ravel() )
     
     theta_BSO = np.concatenate(theta_BSO_list) if theta_BSO_list else np.array([], dtype=float)
+    salt_BSO = np.concatenate(salt_BSO_list) if salt_BSO_list else np.array([], dtype=float)
     flux_BSO  = np.concatenate(flux_BSO_list)  if flux_BSO_list  else np.array([], dtype=float)
-    
+
+    # add a section for the M term, or plotted in T space
     ADVh_BSO = bin_gate_by_face_theta_zero(theta_BSO, flux_BSO, binmidT, nTm1)
-    G_BSO    = ADVh_BSO / binwidthT1
+    G_BSO    = ADVh_BSO / binwidthT1      # in units of m^3/s
+    
+    ADVh_BSO_TS = bin_gate_by_face_TS_zero(theta_BSO, salt_BSO, flux_BSO,binmidT, binmidS, nTm1, nSm1)
+    G_BSO_TS = ADVh_BSO_TS / (binwidthT1[:, None] * binwidthS1[None, :])  # in units of m^3/s/PSU
     
     
     # ---- FJNZ ----
-    theta_FJNZ_list, flux_FJNZ_list = [], []
+    theta_FJNZ_list, salt_FJNZ_list, flux_FJNZ_list = [], [], []
     
     for j, i in zip(y_fjnzv, x_fjnzv):
         theta_FJNZ_list.append(theta_x[:, j, i].ravel())
-        flux_FJNZ_list.append( (-ADVx_vol[:, j, i]).ravel() )
+        salt_FJNZ_list.append(salt_x[:, j, i].ravel())
+        flux_FJNZ_list.append((-ADVx_vol[:, j, i]).ravel())
     
     theta_FJNZ = np.concatenate(theta_FJNZ_list) if theta_FJNZ_list else np.array([], dtype=float)
+    salt_FJNZ  = np.concatenate(salt_FJNZ_list)  if salt_FJNZ_list  else np.array([], dtype=float)
     flux_FJNZ  = np.concatenate(flux_FJNZ_list)  if flux_FJNZ_list  else np.array([], dtype=float)
     
     ADVh_FJNZ = bin_gate_by_face_theta_zero(theta_FJNZ, flux_FJNZ, binmidT, nTm1)
     G_FJNZ    = ADVh_FJNZ / binwidthT1
+
+    ADVh_FJNZ_TS = bin_gate_by_face_TS_zero(theta_FJNZ, salt_FJNZ, flux_FJNZ,binmidT, binmidS, nTm1, nSm1)
+    G_FJNZ_TS = ADVh_FJNZ_TS / (binwidthT1[:, None] * binwidthS1[None, :])  # m^3/s/PSU
     
     
     # ---- SPFJ ----
-    theta_SPFJ_list, flux_SPFJ_list = [], []
+    theta_SPFJ_list, salt_SPFJ_list, flux_SPFJ_list = [], [], []
     
     for j, i in zip(y_spfjv2, x_spfjv2):
         theta_SPFJ_list.append(theta_y[:, j, i].ravel())
-        flux_SPFJ_list.append( (-ADVy_vol[:, j, i]).ravel() )
+        salt_SPFJ_list.append(salt_y[:, j, i].ravel())
+        flux_SPFJ_list.append((-ADVy_vol[:, j, i]).ravel())
     
     for j, i in zip(y_spfjh2, x_spfjh2):
         theta_SPFJ_list.append(theta_x[:, j, i].ravel())
-        flux_SPFJ_list.append( (-ADVx_vol[:, j, i]).ravel() )
+        salt_SPFJ_list.append(salt_x[:, j, i].ravel())
+        flux_SPFJ_list.append((-ADVx_vol[:, j, i]).ravel())
     
     for j, i in zip(y_spfjb2, x_spfjb2):
         theta_SPFJ_list.append(theta_x[:, j, i].ravel())
-        flux_SPFJ_list.append( (-ADVx_vol[:, j, i]).ravel() )
+        salt_SPFJ_list.append(salt_x[:, j, i].ravel())
+        flux_SPFJ_list.append((-ADVx_vol[:, j, i]).ravel())
     
         theta_SPFJ_list.append(theta_y[:, j, i].ravel())
-        flux_SPFJ_list.append( (-ADVy_vol[:, j, i]).ravel() )
+        salt_SPFJ_list.append(salt_y[:, j, i].ravel())
+        flux_SPFJ_list.append((-ADVy_vol[:, j, i]).ravel())
     
     theta_SPFJ = np.concatenate(theta_SPFJ_list) if theta_SPFJ_list else np.array([], dtype=float)
+    salt_SPFJ  = np.concatenate(salt_SPFJ_list)  if salt_SPFJ_list  else np.array([], dtype=float)
     flux_SPFJ  = np.concatenate(flux_SPFJ_list)  if flux_SPFJ_list  else np.array([], dtype=float)
     
     ADVh_SPFJ = bin_gate_by_face_theta_zero(theta_SPFJ, flux_SPFJ, binmidT, nTm1)
     G_SPFJ    = ADVh_SPFJ / binwidthT1
-    
+
+    ADVh_SPFJ_TS = bin_gate_by_face_TS_zero(theta_SPFJ, salt_SPFJ, flux_SPFJ,binmidT, binmidS, nTm1, nSm1)
+    G_SPFJ_TS = ADVh_SPFJ_TS / (binwidthT1[:, None] * binwidthS1[None, :])
     
     # ---- NZRU ----
-    theta_NZRU_list, flux_NZRU_list = [], []
+    theta_NZRU_list, salt_NZRU_list, flux_NZRU_list = [], [], []
     
     for j, i in zip(y_nzruv, x_nzruv):
         theta_NZRU_list.append(theta_x[:, j, i].ravel())
-        flux_NZRU_list.append( (-ADVx_vol[:, j, i]).ravel() )
+        salt_NZRU_list.append(salt_x[:, j, i].ravel())
+        flux_NZRU_list.append((-ADVx_vol[:, j, i]).ravel())
     
     theta_NZRU = np.concatenate(theta_NZRU_list) if theta_NZRU_list else np.array([], dtype=float)
+    salt_NZRU  = np.concatenate(salt_NZRU_list)  if salt_NZRU_list  else np.array([], dtype=float)
     flux_NZRU  = np.concatenate(flux_NZRU_list)  if flux_NZRU_list  else np.array([], dtype=float)
     
     ADVh_NZRU = bin_gate_by_face_theta_zero(theta_NZRU, flux_NZRU, binmidT, nTm1)
     G_NZRU    = ADVh_NZRU / binwidthT1
+    ADVh_NZRU_TS = bin_gate_by_face_TS_zero(theta_NZRU, salt_NZRU, flux_NZRU,binmidT, binmidS, nTm1, nSm1) 
+    G_NZRU_TS = ADVh_NZRU_TS / (binwidthT1[:, None] * binwidthS1[None, :])
     
 
     # instead of returning Msum here, make Msum a dictionary with these four gates
@@ -421,6 +500,21 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     Msum["NZRU"] = ADVh_NZRU
     Msum["Msum"] = ADVh_BSO + ADVh_FJNZ + ADVh_SPFJ + ADVh_NZRU  # degC.m^3/s
     
+    # add the not-normalized versions of this
+    Msum["BSO_TSnn"] = ADVh_BSO_TS
+    Msum["FJNZ_TSnn"] = ADVh_FJNZ_TS
+    Msum["SPFJ_TSnn"] = ADVh_SPFJ_TS
+    Msum["NZRU_TSnn"] = ADVh_NZRU_TS  # we can run a validation with these first and then see
+    Msum["Msum_TSnn"] = ADVh_BSO_TS + ADVh_FJNZ_TS + ADVh_SPFJ_TS + ADVh_NZRU_TS  # degC.m^3/s
+
+    # add the normalized versions of this to get the vector
+    Msum["BSO_TS"] = G_BSO_TS
+    Msum["FJNZ_TS"] = G_FJNZ_TS
+    Msum["SPFJ_TS"] = G_SPFJ_TS
+    Msum["NZRU_TS"] = G_NZRU_TS
+    Msum["Msum_TS"] = G_BSO_TS + G_FJNZ_TS + G_SPFJ_TS + G_NZRU_TS  # m^3/s/PSU
+    
+    ############################################################################################################
     # modify the above to bin by face THETA rather than cell-center THETA
 
     # load the other terms from the offline version -- we can just put this on top of the T diagram
@@ -607,7 +701,7 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
 
     return Msum, dF_Tnew
 
-def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False,debug=False):
+def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,boundsT,boundsS,mapping=False,debug=False):
     # do the same copying over but for SALT terms (from the original verification on 12/15)
     ############################################################
     # define the mask here
@@ -696,14 +790,10 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     # from tsstr, loop through and generate the actual values from the output
 
     # define the layers
-    filename = "layers2TH"
-    boundsT = rdmds(layers_path + filename)
     binsTH_edges = boundsT.reshape(boundsT.shape[0])
     binsTH_centers = (binsTH_edges[:-1] + binsTH_edges[1:])/2
     nT = binsTH_edges.shape[0]-1
     
-    filename = "layers1SLT"
-    boundsS = rdmds(layers_path + filename)
     binsSLT_edges = boundsS.reshape(boundsS.shape[0])
     binsSLT_centers = (binsSLT_edges[:-1] + binsSLT_edges[1:])/2
     nS = binsSLT_edges.shape[0]-1
@@ -795,6 +885,7 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     # --- reshape to 3D ---
     ADVx_SLT = ADVx_SLT.reshape((nz, ny, nx))   # advective salt flux on x-faces (PSU·m^3/s)
     ADVy_SLT = ADVy_SLT.reshape((nz, ny, nx))   # advective salt flux on y-faces (PSU·m^3/s)
+    THETA = THETA.reshape((nz,ny,nx))
     SALT     = SALT.reshape((nz, ny, nx))       # cell-centered salinity (PSU)
     
     # ------------------------------------------------------------------
@@ -805,11 +896,17 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     salt_x = np.zeros_like(ADVx_SLT)
     salt_x[:, :, 1:] = 0.5 * (SALT[:, :, 1:] + SALT[:, :, :-1])
     salt_x[:, :, 0]  = salt_x[:, :, 1]      # simple fill for western boundary
-    
-    # y-faces: between (j-1, j) along y
     salt_y = np.zeros_like(ADVy_SLT)
     salt_y[:, 1:, :] = 0.5 * (SALT[:, 1:, :] + SALT[:, :-1, :])
     salt_y[:, 0, :]  = salt_y[:, 1, :]      # simple fill for southern boundary
+
+    # x-faces: between (i-1, i) along x
+    theta_x = np.zeros_like(ADVx_SLT)
+    theta_x[:, :, 1:] = 0.5 * (THETA[:, :, 1:] + THETA[:, :, :-1])
+    theta_x[:, :, 0]  = theta_x[:, :, 1]   # simple fill for western boundary
+    theta_y = np.zeros_like(ADVy_SLT)
+    theta_y[:, 1:, :] = 0.5 * (THETA[:, 1:, :] + THETA[:, :-1, :])
+    theta_y[:, 0, :]  = theta_y[:, 1, :]   # simple fill for southern boundary
     
     # ------------------------------------------------------------------
     # 2) Convert salt flux (PSU·m^3/s) -> volume flux (m^3/s) if desired
@@ -843,74 +940,104 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     #       if it’s different; arguments assumed: (tracer_vals, flux_vals, edges, nBinsMinus1)
     
     # ---- BSO ----
-    salt_BSO_list, flux_BSO_list = [], []
+    theta_BSO_list, salt_BSO_list, flux_BSO_list = [], [], []
     
     for j, i in zip(y_bsoh, x_bsoh):
+        theta_BSO_list.append(theta_x[:, j, i].ravel())
         salt_BSO_list.append(salt_x[:, j, i].ravel())
         flux_BSO_list.append(ADVx_vol[:, j, i].ravel())
-    
+
     for j, i in zip(y_bsov, x_bsov):
+        theta_BSO_list.append(theta_y[:, j, i].ravel())
         salt_BSO_list.append(salt_y[:, j, i].ravel())
         flux_BSO_list.append((-ADVy_vol[:, j, i]).ravel())
-    
-    salt_BSO = np.concatenate(salt_BSO_list) if salt_BSO_list else np.array([], dtype=float)
-    flux_BSO = np.concatenate(flux_BSO_list) if flux_BSO_list else np.array([], dtype=float)
-    
+
+    theta_BSO = np.concatenate(theta_BSO_list) if theta_BSO_list else np.array([], dtype=float)
+    salt_BSO  = np.concatenate(salt_BSO_list)  if salt_BSO_list  else np.array([], dtype=float)
+    flux_BSO  = np.concatenate(flux_BSO_list)  if flux_BSO_list  else np.array([], dtype=float)
+
+    # build the M term to plot against T
     ADVh_BSO = bin_gate_by_face_theta_zero(salt_BSO, flux_BSO, binmidS, nSm1)
     G_BSO    = ADVh_BSO / binwidthS1
+
+    # build the T--S version of this
+    ADVh_BSO_TS = bin_gate_by_face_TS_zero(theta_BSO, salt_BSO, flux_BSO,binmidT, binmidS, nTm1, nSm1)
+    G_BSO_TS = ADVh_BSO_TS / (binwidthT1[:, None] * binwidthS1[None, :])
     
     
     # ---- FJNZ ----
-    salt_FJNZ_list, flux_FJNZ_list = [], []
-    
+    theta_FJNZ_list, salt_FJNZ_list, flux_FJNZ_list = [], [], []
+
     for j, i in zip(y_fjnzv, x_fjnzv):
+        theta_FJNZ_list.append(theta_x[:, j, i].ravel())
         salt_FJNZ_list.append(salt_x[:, j, i].ravel())
         flux_FJNZ_list.append((-ADVx_vol[:, j, i]).ravel())
-    
+
+    theta_FJNZ = np.concatenate(theta_FJNZ_list) if theta_FJNZ_list else np.array([], dtype=float)
     salt_FJNZ = np.concatenate(salt_FJNZ_list) if salt_FJNZ_list else np.array([], dtype=float)
     flux_FJNZ = np.concatenate(flux_FJNZ_list) if flux_FJNZ_list else np.array([], dtype=float)
-    
+
+    # build the G term to plot against S
     ADVh_FJNZ = bin_gate_by_face_theta_zero(salt_FJNZ, flux_FJNZ, binmidS, nSm1)
     G_FJNZ    = ADVh_FJNZ / binwidthS1
-    
+
+    # and build the TS version
+    ADVh_FJNZ_TS = bin_gate_by_face_TS_zero(theta_FJNZ, salt_FJNZ, flux_FJNZ,binmidT, binmidS, nTm1, nSm1)
+    G_FJNZ_TS = ADVh_FJNZ_TS / (binwidthT1[:, None] * binwidthS1[None, :])
     
     # ---- SPFJ ----
-    salt_SPFJ_list, flux_SPFJ_list = [], []
+    theta_SPFJ_list, salt_SPFJ_list, flux_SPFJ_list = [], [], []
     
     for j, i in zip(y_spfjv2, x_spfjv2):
+        theta_SPFJ_list.append(theta_y[:, j, i].ravel())
         salt_SPFJ_list.append(salt_y[:, j, i].ravel())
         flux_SPFJ_list.append((-ADVy_vol[:, j, i]).ravel())
     
     for j, i in zip(y_spfjh2, x_spfjh2):
+        theta_SPFJ_list.append(theta_x[:, j, i].ravel())
         salt_SPFJ_list.append(salt_x[:, j, i].ravel())
         flux_SPFJ_list.append((-ADVx_vol[:, j, i]).ravel())
     
     for j, i in zip(y_spfjb2, x_spfjb2):
+        theta_SPFJ_list.append(theta_x[:, j, i].ravel())
         salt_SPFJ_list.append(salt_x[:, j, i].ravel())
         flux_SPFJ_list.append((-ADVx_vol[:, j, i]).ravel())
     
+        theta_SPFJ_list.append(theta_y[:, j, i].ravel())
         salt_SPFJ_list.append(salt_y[:, j, i].ravel())
         flux_SPFJ_list.append((-ADVy_vol[:, j, i]).ravel())
-    
+
+    theta_SPFJ = np.concatenate(theta_SPFJ_list) if theta_SPFJ_list else np.array([], dtype=float)
     salt_SPFJ = np.concatenate(salt_SPFJ_list) if salt_SPFJ_list else np.array([], dtype=float)
     flux_SPFJ = np.concatenate(flux_SPFJ_list) if flux_SPFJ_list else np.array([], dtype=float)
-    
+
+    # build the M term to plot against S
     ADVh_SPFJ = bin_gate_by_face_theta_zero(salt_SPFJ, flux_SPFJ, binmidS, nSm1)
     G_SPFJ    = ADVh_SPFJ / binwidthS1
-    
-    
+
+    # build the TS diagram from this
+    ADVh_SPFJ_TS = bin_gate_by_face_TS_zero(theta_SPFJ, salt_SPFJ, flux_SPFJ,binmidT, binmidS, nTm1, nSm1)
+    G_SPFJ_TS = ADVh_SPFJ_TS / (binwidthT1[:, None] * binwidthS1[None, :])
+        
     # ---- NZRU ----
-    salt_NZRU_list, flux_NZRU_list = [], []
+    theta_NZRU_list, salt_NZRU_list, flux_NZRU_list = [], [], []
     
     for j, i in zip(y_nzruv, x_nzruv):
+        theta_NZRU_list.append(theta_x[:, j, i].ravel())
         salt_NZRU_list.append(salt_x[:, j, i].ravel())
         flux_NZRU_list.append((-ADVx_vol[:, j, i]).ravel())
-    
+
+    theta_NZRU = np.concatenate(theta_NZRU_list) if theta_NZRU_list else np.array([], dtype=float)
     salt_NZRU = np.concatenate(salt_NZRU_list) if salt_NZRU_list else np.array([], dtype=float)
     flux_NZRU = np.concatenate(flux_NZRU_list) if flux_NZRU_list else np.array([], dtype=float)
-    
+
+    # create the volume transformation to plot against S
     ADVh_NZRU = bin_gate_by_face_theta_zero(salt_NZRU, flux_NZRU, binmidS, nSm1)
     G_NZRU    = ADVh_NZRU / binwidthS1
+
+    # create the TS diagram for this
+    ADVh_NZRU_TS = bin_gate_by_face_TS_zero(theta_NZRU, salt_NZRU, flux_NZRU,binmidT, binmidS, nTm1, nSm1)
+    G_NZRU_TS = ADVh_NZRU_TS / (binwidthT1[:, None] * binwidthS1[None, :])
     
     
     # instead of returning Msum here, make Msum a dictionary with these four gates
@@ -919,13 +1046,24 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     Msum["FJNZ"] = ADVh_FJNZ
     Msum["SPFJ"] = ADVh_SPFJ
     Msum["NZRU"] = ADVh_NZRU
-    Msum["Msum"] = ADVh_BSO + ADVh_FJNZ + ADVh_SPFJ + ADVh_NZRU  # PSU·m^3/s (or m^3/s if you enable division)
+    Msum["Msum"] = ADVh_BSO + ADVh_FJNZ + ADVh_SPFJ + ADVh_NZRU
+
+    # add the not-normalized versions of this
+    Msum["BSO_TSnn"] = ADVh_BSO_TS
+    Msum["FJNZ_TSnn"] = ADVh_FJNZ_TS
+    Msum["SPFJ_TSnn"] = ADVh_SPFJ_TS
+    Msum["NZRU_TSnn"] = ADVh_NZRU_TS  # we can run a validation with these first and then see
+    Msum["Msum_TSnn"] = ADVh_BSO_TS + ADVh_FJNZ_TS + ADVh_SPFJ_TS + ADVh_NZRU_TS  # PSU.m^3/s
+
+    # add the normalized versions of this to get the vector
+    Msum["BSO_TS"] = G_BSO_TS
+    Msum["FJNZ_TS"] = G_FJNZ_TS
+    Msum["SPFJ_TS"] = G_SPFJ_TS
+    Msum["NZRU_TS"] = G_NZRU_TS
+    Msum["Msum_TS"] = G_BSO_TS + G_FJNZ_TS + G_SPFJ_TS + G_NZRU_TS  # m^3/s/degC
 
 
-    # define the other terms (all)
-
-    # cool, do the same for diff
-    
+    ########################################################################################################################
     
     ## do the advective convergence
     file_name = "budg3d_hflux_set2"

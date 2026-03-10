@@ -78,7 +78,7 @@ def _mark_points(mask, xs, ys, code, ny, nx, name="gate"):
             mask[j, i] = 3  # overlap with different code
     return mask
 
-def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
+def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False,debug=False):
     ############################################################
     # define the mask here
     # try to use rdmds
@@ -89,7 +89,7 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     orig_shape = (ind.shape)
     
     ind2d = ind.reshape(ny,nx)
-    
+
     mymsk = np.full((ny,nx),np.nan)
     mymsk[ind2d == 57408.0] = 1
     
@@ -189,6 +189,10 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
 
     # read from T and S
     t2 = int(tsstr[1])
+
+    if debug:
+        mymsk = np.full((ny,nx),np.nan)
+        mymsk[150,19] = 1
     mymsk3d = np.tile(mymsk[np.newaxis,:,:],(nz,1,1))
 
     # 'diags/state_3d_set1'
@@ -603,7 +607,7 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
 
     return Msum, dF_Tnew
 
-def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
+def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False,debug=False):
     # do the same copying over but for SALT terms (from the original verification on 12/15)
     ############################################################
     # define the mask here
@@ -715,6 +719,9 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
 
     # read from T and S
     t2 = int(tsstr[1])
+    if debug:
+        mymsk = np.full((ny,nx),np.nan)
+        mymsk[150,19] = 1
     mymsk3d = np.tile(mymsk[np.newaxis,:,:],(nz,1,1))
 
     # 'diags/state_3d_set1'
@@ -1113,3 +1120,12 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     G_S_offline_new = dF_Snew / binwidthS1[None, :]
 
     return Msum,dF_Snew
+
+
+# def get_gates_TS(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
+#     # this will return a dictionary of TS diagrams for each of the gates
+#     # we can get both temperature and salt, binned to the THETA or SALT at the FACE on the open boundary
+#     # use the same formula as before and mark a check for looking at the gates in T--S space
+#     # just do the same thing basically as before and return the TS distribution volume transport for the gates
+
+#     # let's 
