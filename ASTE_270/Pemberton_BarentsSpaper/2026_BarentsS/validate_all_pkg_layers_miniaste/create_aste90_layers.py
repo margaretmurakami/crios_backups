@@ -662,7 +662,7 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
         termsT3D["tend"] = tmptend
 
         # just return the dict
-        return termsT3D
+        return Msum,termsT3D
         
 
     # define the ADVh total for this mymsk2
@@ -1221,7 +1221,7 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
         termsS3D["tend"] = tmptend
 
         # just return the dict
-        return termsS3D
+        return Msum,termsS3D
 
     # define the ADVh total for this mymsk2
     G_S_offline_new = np.zeros((7, nS-1))
@@ -1260,10 +1260,148 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     return Msum,dF_Snew
 
 
-# def get_gates_TS(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,mapping=False):
-#     # this will return a dictionary of TS diagrams for each of the gates
-#     # we can get both temperature and salt, binned to the THETA or SALT at the FACE on the open boundary
-#     # use the same formula as before and mark a check for looking at the gates in T--S space
-#     # just do the same thing basically as before and return the TS distribution volume transport for the gates
+def create_TS_mesh(binned_theta, binned_salinity, attr, idxs, nT, nS, dT, dS):
+    """
+    Bin attr into T-S space.
 
-#     # let's 
+    Inputs
+    ------
+    binned_theta : array
+        Bin indices for theta, shape (nz, ny, nx) or (time, nz, ny, nx)
+    binned_salinity : array
+        Bin indices for salinity, same shape as binned_theta
+    attr : array
+        Attribute to sum, same shape as binned arrays
+    idxs : tuple
+        np.where(mask == 1), i.e. basin horizontal indices
+    nT, nS : int
+        Number of T and S bins
+    dT, dS : float or 1D arrays
+        Bin widths in T and S
+
+    Returns
+    -------
+    mesh : array
+        Shape (nT, nS), volume summed into T-S bins and normalized by dT*dS
+    """
+
+    # extract basin points
+    if attr.ndim == 4:
+        raise ValueError("Pass a single time slice, not a time-dependent 4D array.")
+    elif attr.ndim == 3:
+        thisattr = attr[:, idxs[0], idxs[1]]              # (nz, npoints)
+        thisT    = binned_theta[:, idxs[0], idxs[1]]      # (nz, npoints)
+        thisS    = binned_salinity[:, idxs[0], idxs[1]]   # (nz, npoints)
+    elif attr.ndim == 2:
+        thisattr = attr[idxs[0], idxs[1]]
+        thisT    = binned_theta[idxs[0], idxs[1]]
+        thisS    = binned_salinity[idxs[0], idxs[1]]
+    else:
+        raise ValueError("attr must be 2D or 3D")
+
+    # flatten
+    thisattr = thisattr.ravel()
+    thisT    = thisT.ravel()
+    thisS    = thisS.ravel()
+
+    # keep only valid bin assignments
+    valid = (
+        np.isfinite(thisattr) &
+        np.isfinite(thisT) &
+        np.isfinite(thisS) &
+        (thisT >= 0) & (thisT < nT) &
+        (thisS >= 0) & (thisS < nS)
+    )
+
+    thisattr = thisattr[valid]
+    thisT    = thisT[valid].astype(int)
+    thisS    = thisS[valid].astype(int)
+
+    # build mesh: shape (nT, nS)
+    mesh = np.zeros((nT, nS))
+    np.add.at(mesh, (thisT, thisS), thisattr)
+
+    # normalize by bin area in T-S space
+    # if dT and dS are scalars:
+    if np.ndim(dT) == 0 and np.ndim(dS) == 0:
+        mesh = mesh / (dT * dS)
+    else:
+        # if dT, dS are 1D arrays of bin widths
+        mesh = mesh / (np.asarray(dT)[:, None] * np.asarray(dS)[None, :])
+
+    return mesh
+
+def bin_3d_term_to_TS(term3d, THETA, SALT, mymsk3d, binmidT, binmidS, binwidthT1, binwidthS1):
+    nT = len(binmidT)
+    nS = len(binmidS)
+
+    dF_TS = np.zeros((nT-1, nS-1), dtype=float)
+    L_TS  = np.zeros((nT-1, nS-1), dtype=int)
+
+    # Flatten
+    T_flat = np.ravel(THETA * mymsk3d, order="F")
+    S_flat = np.ravel(SALT  * mymsk3d, order="F")
+    X_flat = np.ravel(term3d * mymsk3d, order="F")
+
+    # Bin indices
+    iT = np.searchsorted(binmidT, T_flat, side="right") - 1
+    iS = np.searchsorted(binmidS, S_flat, side="right") - 1
+
+    # Valid points
+    ok = (iT >= 0) & (iT < nT-1) & (iS >= 0) & (iS < nS-1) & np.isfinite(X_flat)
+    iT = iT[ok]
+    iS = iS[ok]
+    vals = X_flat[ok]
+
+    # Accumulate
+    np.add.at(dF_TS, (iT, iS), vals)
+    np.add.at(L_TS,  (iT, iS), 1)
+
+    # Normalize by both bin widths
+    dA = binwidthT1[:, None] * binwidthS1[None, :]  # An suggests doing this separately in future
+                                                    # first division in dT or dS gets you G_T or G_S
+                                                    # second division by dS or dT gets you the J component of J_S or J_T
+    G_TS = dF_TS / dA                               # should not be called G_TS here!
+
+    return G_TS, dF_TS, L_TS
+
+def get_div(Jy, Jx, dT_centers, dS_centers):
+    """
+    inputs:
+        Jy: transport in T direction, shape (nT-1, nS-1), units m^3/s/PSU
+            defined on center of T_centers,S_centers
+        Jx: transport in S direction, shape (nT-1, nS-1), units m^3/s/degC
+            defined on center of T_centers,S_centers
+        dT_edges: T-bin widths at interior T intervals, shape (nT-1,) or compatible
+        dS_edges: S-bin widths at interior S intervals, shape (nS-1,) or compatible
+
+    outputs:
+        gradJ: divergence on interior cell centers, shape (nT-2, nS-2),
+               units Sv/PSU/degC
+    """
+
+    # Interpolate fluxes onto the INNER faces of the interior cells first
+    # Jy_inner: top/bottom faces for interior cells, remove outer S columns
+    Jy_inner = 0.5 * (Jy[1:, :] + Jy[:-1, :])   # shape (nT-2, nS-1)   # bring these up to the inner face  (in temp)
+
+    # Jx_inner: left/right faces for interior cells, remove outer T rows
+    Jx_inner = 0.5 * (Jx[:, 1:] + Jx[:, :-1])   # shape (nT-2, nS-1)   # bring these to the inner faces LR (in salt)
+
+    # Then take differences across those inner faces
+    # check this is the correct sign for + in
+    dJy = Jy_inner[1:, :] - Jy_inner[:-1, :]    # shape (nT-3, nS-2)
+    dJx = Jx_inner[:, 1:] - Jx_inner[:, :-1]    # shape (nT-2, nS-3)
+
+    # Divide by bin widths
+    dJydT = dJy / dT_centers[1:-1, None]
+    dJxdS = dJx / dS_centers[None, 1:-1]
+
+    
+    #print()
+
+    #print(np.where(dJydT!=0),np.where(dJxdS!=0))
+
+    # Negative so positive means creation
+    gradJ = -(dJydT[:,1:-1] + dJxdS[1:-1,:])
+
+    return gradJ * 1e-6   # Sv/PSU/degC
