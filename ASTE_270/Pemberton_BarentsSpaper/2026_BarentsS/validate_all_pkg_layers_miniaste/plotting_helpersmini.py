@@ -105,10 +105,6 @@ def SI_masked(
     meta_out = {"ts_list": tsstr, "pairs": pairs, "npairs": npairs, "read_second_of_pair": True}
     return SI_masked_mean_tr, SI_mean_tr, meta_out
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-
 def plot_budget_miniaste(
     terms3D,
     mygrid,
@@ -126,6 +122,8 @@ def plot_budget_miniaste(
     cbar_label=None,
     suptitle=None,
     contour_interval=100,
+    save=False,
+    save_name=None,
 ):
     """
     Plot a 3x3 mini-ASTE panel of budget terms for either heat or salt.
@@ -164,6 +162,10 @@ def plot_budget_miniaste(
         Figure title. If None, a default is used.
     contour_interval : int or float, optional
         Bathymetry contour interval in meters.
+    save : bool, optional
+        If True, save figure locally in ./figs/.
+    save_name : str, optional
+        Output filename. If None, a default name is generated.
 
     Returns
     -------
@@ -253,5 +255,16 @@ def plot_budget_miniaste(
 
     plt.suptitle(suptitle)
     plt.tight_layout()
+
+    if save:
+        os.makedirs("figs", exist_ok=True)
+
+        if save_name is None:
+            budget_type = "heat" if kind == "T" else "salt"
+            save_name = f"miniaste_{budget_type}_budget_k{klev}.png"
+
+        save_path = os.path.join("figs", save_name)
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+        print(f"Saved figure to {save_path}")
 
     return fig, axes
