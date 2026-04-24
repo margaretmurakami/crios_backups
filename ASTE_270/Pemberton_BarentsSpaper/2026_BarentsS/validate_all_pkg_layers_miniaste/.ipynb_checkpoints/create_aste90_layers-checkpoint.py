@@ -572,42 +572,66 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
     SItflux = SItflux.reshape(ny,nx)
     
     # we need to create zconv_top and swtop
+    # we need to create zconv_top and swtop
     dd = mygrid['RF'][:-1]
-    swfrac = 0.62*np.exp(dd/0.6)+(1-0.62)*np.exp(dd/20)
+    swfrac = 0.62*np.exp(dd/0.6) + (1-0.62)*np.exp(dd/20)
     swfrac[dd < -200] = 0
-    swtop=mk3D_mod(swfrac,np.zeros((nz,ny,nx)))*mk3D_mod(RAC*oceQsw,np.zeros((nz,ny,nx)))   # J/s
     
-    # zconvtop_heat is here
-    zconv_top_heat = TFLUX * RAC     # W/m^2 * m^2 = J/s
+    # shortwave penetration profile in J/s
+    swtop = (
+        mk3D_mod(swfrac, np.zeros((nz, ny, nx))) *
+        mk3D_mod(RAC * oceQsw, np.zeros((nz, ny, nx)))
+    )
+    
+    # non-penetrative surface heat input in J/s
+    zconv_top_heat_total = TFLUX * RAC
     
     
     def surface_contrib_JT(zconv_top_heat, swtop, rcp, fill_last=0.0):
         """
-        zconv_top_heat: (ny, nx)
-        swtop:          (nz, ny, nx)
-        rcp:            scalar
-        fill_last:      value for bottom slice (k = nz-1), usually 0.0 or np.nan
+        zconv_top_heat: (ny, nx)     surface convergence term in J/s
+        swtop:          (nz, ny, nx) penetrating downward flux profile in J/s
         returns:
-          JsurfT:       (nz, ny, nx)  # Sv / PSU
+          JsurfT:       (nz, ny, nx) in degC.m^3/s
         """
-        nz, ny, nx = swtop.shape
-    
-        eT = zconv_top_heat.reshape(1, ny, nx)  # (1,ny,nx) for broadcast
-    
+        nz_, ny_, nx_ = swtop.shape
+        eT = zconv_top_heat.reshape(1, ny_, nx_)
         J = np.empty_like(swtop, dtype=float)
     
-        # k = 0: (eT - fT[1]) / rcp / dT / dS * 1e-6
-        J[0] = (eT[0] - swtop[1]) / rcp if np.ndim(binwidthT)==0 else \
-               (eT[0] - swtop[1]) / rcp
+        # top cell: net surface input minus flux penetrating into cell below
+        J[0] = (eT[0] - swtop[1]) / rcp
     
-        # 1 .. nz-2: -(fT[k+1]-fT[k]) / rcp / dT / dS * 1e-6
-        J[1:nz-1] = -(swtop[2:nz] - swtop[1:nz-1]) / rcp
+        # interior cells: convergence of penetrating shortwave flux
+        J[1:nz_-1] = -(swtop[2:nz_] - swtop[1:nz_-1]) / rcp
     
-        # bottom slice (k = nz-1): no k+1; choose your boundary convention
+        # bottom boundary convention
         J[-1] = fill_last
+    
         return J
     
-    Ft_surftest = surface_contrib_JT(zconv_top_heat,swtop,myparms['rcp'])    # this is in degC.m^3/s
+    
+    ############################################################
+    # original total surface contribution
+    Ft_surf = surface_contrib_JT(
+        zconv_top_heat_total,
+        swtop,
+        myparms['rcp']
+    )
+    
+    # split into just two terms:
+    # 1) zconv_top contribution alone
+    Ft_zconv_top = surface_contrib_JT(
+        zconv_top_heat_total,
+        np.zeros((nz, ny, nx)),
+        myparms['rcp']
+    )
+    
+    # 2) shortwave penetration contribution alone
+    Ft_swtop = surface_contrib_JT(
+        np.zeros((ny, nx)),
+        swtop,
+        myparms['rcp']
+    )    # this is in degC.m^3/s
     
     # read kpp tend and from 3d zflux
     file_name = "budg3d_kpptend_set1"
@@ -651,55 +675,72 @@ def create_layers_totalTHETA(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,
 
     # redefine all the terms as a list from how we did before
     # if mapping, just return the map of terms as 3D fields
+    # redefine all the terms as a list from how we did before
+    # if mapping, just return the map of terms as 3D fields
     if mapping:
         termsT3D = {}
         termsT3D["ADVh"] = ADVhT
         termsT3D["ADVr"] = ADVrT
         termsT3D["DFhT"] = DFhT
         termsT3D["DFrT"] = DFrT
-        termsT3D["surf"] = Ft_surftest
+        termsT3D["surf"] = Ft_surf
+        termsT3D["TFLUX"] = Ft_surf
+        termsT3D["zconv_top"] = Ft_zconv_top
+        termsT3D["swtop"] = Ft_swtop
         termsT3D["KPP"] = tmpkpp
         termsT3D["tend"] = tmptend
-
-        # just return the dict
-        return Msum,termsT3D
-        
-
-    # define the ADVh total for this mymsk2
-    G_T_offline_new = np.zeros((7, nT-1))
-    dF_Tnew = np.zeros((7, nT-1))
-    Lijnew = np.zeros((7, nT-1), dtype=int)
     
-    # also mask these by mymsk3
-    # flatten the 3D arrays along all dimensions, as MATLAB’s tmp(:) does
-    T_flat    = np.ravel(THETA* mymsk3d, order='F')
-    ADVh_flat = np.ravel(ADVhT* mymsk3d,  order='F')
-    ADVr_flat = np.ravel(ADVrT* mymsk3d,  order='F')
-    DFh_flat = np.ravel(DFhT* mymsk3d,  order='F')
-    DFr_flat = np.ravel(DFrT* mymsk3d,  order='F')
-    surf_flat = np.ravel(Ft_surftest* mymsk3d,  order='F')
-    kpp_flat = np.ravel(tmpkpp* mymsk3d,  order='F')
-    tend_flat = np.ravel(tmptend* mymsk3d,  order='F')
+        return Msum, termsT3D
+
+    term_names = [
+        "ADVh",
+        "ADVr",
+        "DFhT",
+        "DFrT",
+        "TFLUX",
+        "zconv_top",
+        "swtop",
+        "KPP",
+        "tend",
+    ]
     
-    for i in range(nT-1):
-        # MATLAB: ij = find(tmp(:) >= bbb.binmidT(i) & tmp(:) < bbb.binmidT(i+1))
+    term_fields = {
+        "ADVh": ADVhT,
+        "ADVr": ADVrT,
+        "DFhT": DFhT,
+        "DFrT": DFrT,
+        "TFLUX": Ft_surf,
+        "zconv_top": Ft_zconv_top,
+        "swtop": Ft_swtop,
+        "KPP": tmpkpp,
+        "tend": tmptend,
+    }
+    
+    nterms = len(term_names)
+    dF_Tnew = np.zeros((nterms, nT - 1))
+    G_T_offline_new = np.zeros((nterms, nT - 1))
+    Lijnew = np.zeros((1, nT - 1), dtype=int)
+    
+    T_flat = np.ravel(THETA * mymsk3d, order='F')
+    term_flats = {
+        name: np.ravel(field * mymsk3d, order='F')
+        for name, field in term_fields.items()
+    }
+    
+    for i in range(nT - 1):
         ij = np.where((T_flat >= binmidT[i]) & (T_flat < binmidT[i + 1]))[0]
         Lijnew[0, i] = len(ij)
     
         if len(ij) > 0:
-            # MATLAB: dF_Tnew(4,i)=sum(ff.advh(ij)); dF_Tnew(5,i)=sum(ff.advr(ij));
-            dF_Tnew[0, i] = np.nansum(ADVh_flat[ij])
-            dF_Tnew[1, i] = np.nansum(ADVr_flat[ij])
-            dF_Tnew[2, i] = np.nansum(DFh_flat[ij])
-            dF_Tnew[3, i] = np.nansum(DFr_flat[ij])
-            dF_Tnew[4, i] = np.nansum(surf_flat[ij])
-            dF_Tnew[5, i] = np.nansum(kpp_flat[ij])
-            dF_Tnew[6, i] = np.nansum(tend_flat[ij])
+            for it, name in enumerate(term_names):
+                dF_Tnew[it, i] = np.nansum(term_flats[name][ij])
     
-    # MATLAB: G_T_offline_new = dF_Tnew ./ repmat(bbb.binwidthT1,[6 1])
     G_T_offline_new = dF_Tnew / binwidthT1[None, :]
+    
+    dF_T_dict = {name: dF_Tnew[it] for it, name in enumerate(term_names)}
+    G_T_dict  = {name: G_T_offline_new[it] for it, name in enumerate(term_names)}
 
-    return Msum, dF_Tnew
+    return Msum, dF_T_dict
 
 def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,mymsk,nz,ny,nx,nfx,nfy,dt,boundsT,boundsS,mapping=False,debug=False):
     # do the same copying over but for SALT terms (from the original verification on 12/15)
@@ -1147,44 +1188,74 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
     KPPg_SLT = KPPg_SLT.reshape(nz,ny,nx)
     
     RAC3 = np.tile(RAC[np.newaxis,:,:],(nz,1,1))
-    sptop = mk3D_mod(oceSPflx,oceSPtnd) - np.cumsum(oceSPtnd, axis=0)        # we include this in our zconv_top term
+    file_name = "budg3d_kpptend_set1"
+    meta_budg3d_kpptend_set1 = parsemeta(dirdiags + file_name + "." + tsstr[0] + ".meta")
+    fldlist = np.array(meta_budg3d_kpptend_set1["fldList"])
+    
+    rec_oceSPtnd = np.where(fldlist == "oceSPtnd")[0][0]
+    
+    oceSPtnd, its, meta = rdmds(
+        os.path.join(dirdiags, file_name),
+        t2,
+        returnmeta=True,
+        rec=rec_oceSPtnd
+    )
+    oceSPtnd = oceSPtnd.reshape(nz, ny, nx)
+    
+    RAC3 = np.tile(RAC[np.newaxis, :, :], (nz, 1, 1))
+    
+    # 3D redistributed salt surface term
+    sptop = mk3D_mod(oceSPflx, oceSPtnd) - np.cumsum(oceSPtnd, axis=0)
     sptop = sptop * RAC3        # g/s
     
-    zconv_top_salt = (SFLUX + oceSPflx) * RAC               # g/s
+    # 2D top boundary term
+    zconv_top_salt = (SFLUX + oceSPflx) * RAC   # g/s
     
-    def surface_contrib_JT(zconv_top_salt, sptop, rho, fill_last=0.0):
+    
+    def surface_contrib_JS(zconv_top_salt, sptop, rho, fill_last=0.0):
         """
-        zconv_top_heat: (ny, nx)
-        swtop:          (nz, ny, nx)
-        rcp:            scalar
-        fill_last:      value for bottom slice (k = nz-1), usually 0.0 or np.nan
+        zconv_top_salt : (ny, nx)     top boundary salt term in g/s
+        sptop          : (nz, ny, nx) redistributed salt flux profile in g/s
         returns:
-          JsurfT:       (nz, ny, nx)  # Sv / PSU
+          JsurfS       : (nz, ny, nx) in PSU.m^3/s
         """
-        nz, ny, nx = sptop.shape
-    
-        eS = zconv_top_salt.reshape(1, ny, nx)  # (1,ny,nx) for broadcast
-    
+        nz_, ny_, nx_ = sptop.shape
+        eS = zconv_top_salt.reshape(1, ny_, nx_)
         J = np.empty_like(sptop, dtype=float)
     
-        # k = 0: (eT - fT[1]) / rcp / dT / dS * 1e-6
-        J[0] = (eS[0] - sptop[1]) / rho if np.ndim(binwidthS)==0 else \
-               (eS[0] - sptop[1]) / rho
-    
-        # 1 .. nz-2: -(fT[k+1]-fT[k]) / rcp / dT / dS * 1e-6
-        J[1:nz] = -(sptop[1:nz] - sptop[0:nz-1]) / rho
-    
-        # bottom slice (k = nz-1): no k+1; choose your boundary convention
+        J[0] = (eS[0] - sptop[1]) / rho
+        J[1:nz_] = -(sptop[1:nz_] - sptop[0:nz_-1]) / rho
         J[-1] = fill_last
+    
         return J
     
-    Ft_surftest = surface_contrib_JT(zconv_top_salt,sptop,myparms['rhoconst'])    # this is in PSU.m^3/s
+    
+    # original full surface salt contribution
+    Fs_surf = surface_contrib_JS(
+        zconv_top_salt,
+        sptop,
+        myparms['rhoconst']
+    )
+    
+    # split into two terms
+    Fs_zconv_top = surface_contrib_JS(
+        zconv_top_salt,
+        np.zeros((nz, ny, nx)),
+        myparms['rhoconst']
+    )
+    
+    Fs_sptop = surface_contrib_JS(
+        np.zeros((ny, nx)),
+        sptop,
+        myparms['rhoconst']
+    )
     
     # do the vertical convergence for KPP
     trWtopKPP = -(KPPg_SLT)         # PSU.m^3/s
     
-    tmpkpp = np.full((nz,ny,nx),np.nan)
-    tmpkpp[:-1,:,:] = trWtopKPP[:-1] - trWtopKPP[1:]
+    tmpkpp = np.full((nz, ny, nx), np.nan)
+    tmpkpp[:-1, :, :] = trWtopKPP[:-1] - trWtopKPP[1:]
+    
     
     file_name = 'budg3d_snap_set2'
     meta_budg3d_snap_set2 = parsemeta(dirdiags + file_name + "." + tsstr[0] + ".meta")
@@ -1195,20 +1266,21 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
         irec = np.where(fldlist == var)
         recs = np.append(recs, irec[0][0])
     
-    
-    SALTDR = np.full((len(tsstr),nz,ny,nx),np.nan)
+    SALTDR = np.full((len(tsstr), nz, ny, nx), np.nan)
     for i in range(len(tsstr)):
-        thisSALTDR,its,meta = rdmds(os.path.join(dirdiags, file_name),int(tsstr[i]),returnmeta=True,rec=recs[0])
-        thisSALTDR = thisSALTDR.reshape(nz,ny,nx)
+        thisSALTDR, its, meta = rdmds(
+            os.path.join(dirdiags, file_name),
+            int(tsstr[i]),
+            returnmeta=True,
+            rec=recs[0]
+        )
+        thisSALTDR = thisSALTDR.reshape(nz, ny, nx)
         SALTDR[i] = thisSALTDR
     
-    SALTDR =  (SALTDR[1, :, :,:] - SALTDR[0, :,:, :]) / dt    # PSU.m/s
-    #print(np.nansum(SALTDR),dt)
+    SALTDR = (SALTDR[1, :, :, :] - SALTDR[0, :, :, :]) / dt    # PSU.m/s
+    tmptend = (SALTDR - 0) * mk3D_mod(RAC, SALTDR)              # PSU.m^3/s
     
-    tmptend = (SALTDR - 0) * mk3D_mod(RAC,SALTDR)    # PSU.m/s * m^2 = PSU.m^3/s
-
-    # redefine all the terms as a list from how we did before
-    # redefine all the terms as a list from how we did before
+    
     # if mapping, just return the map of terms as 3D fields
     if mapping:
         termsS3D = {}
@@ -1216,48 +1288,65 @@ def create_layers_totalSALT(tsstr,mygrid,myparms,dirdiags,dirstate,layers_path,m
         termsS3D["ADVr"] = ADVrS
         termsS3D["DFhS"] = DFhS
         termsS3D["DFrS"] = DFrS
-        termsS3D["surf"] = Ft_surftest
+        termsS3D["surf"] = Fs_surf
+        termsS3D["zconv_top"] = Fs_zconv_top
+        termsS3D["sptop"] = Fs_sptop
         termsS3D["KPP"] = tmpkpp
         termsS3D["tend"] = tmptend
-
-        # just return the dict
-        return Msum,termsS3D
-
-    # define the ADVh total for this mymsk2
-    G_S_offline_new = np.zeros((7, nS-1))
-    dF_Snew = np.zeros((7, nS-1))
-    Lijnew = np.zeros((7, nS-1), dtype=int)
     
-    # also mask these by mymsk3
-    # flatten the 3D arrays along all dimensions, as MATLAB’s tmp(:) does
-    S_flat    = np.ravel(SALT*hf* mymsk3d, order='F')
-    ADVh_flat = np.ravel(ADVhS*hf* mymsk3d,  order='F')
-    ADVr_flat = np.ravel(ADVrS*hf* mymsk3d,  order='F')
-    DFh_flat = np.ravel(DFhS*hf* mymsk3d,  order='F')
-    DFr_flat = np.ravel(DFrS*hf* mymsk3d,  order='F')
-    surf_flat = np.ravel(Ft_surftest*hf* mymsk3d,  order='F')
-    kpp_flat = np.ravel(tmpkpp*hf* mymsk3d,  order='F')
-    tend_flat = np.ravel(tmptend*hf* mymsk3d,  order='F')
+        return Msum, termsS3D
     
-    for i in range(nT-1):
-        # MATLAB: ij = find(tmp(:) >= bbb.binmidT(i) & tmp(:) < bbb.binmidT(i+1))
+    
+    # binning with full surface breakdown
+    term_names = [
+        "ADVh",
+        "ADVr",
+        "DFhS",
+        "DFrS",
+        "surf",
+        "zconv_top",
+        "sptop",
+        "KPP",
+        "tend",
+    ]
+    
+    term_fields = {
+        "ADVh": ADVhS,
+        "ADVr": ADVrS,
+        "DFhS": DFhS,
+        "DFrS": DFrS,
+        "surf": Fs_surf,
+        "zconv_top": Fs_zconv_top,
+        "sptop": Fs_sptop,
+        "KPP": tmpkpp,
+        "tend": tmptend,
+    }
+    
+    nterms = len(term_names)
+    dF_Snew = np.zeros((nterms, nS - 1))
+    G_S_offline_new = np.zeros((nterms, nS - 1))
+    Lijnew = np.zeros((1, nS - 1), dtype=int)
+    
+    S_flat = np.ravel(SALT * hf * mymsk3d, order='F')
+    term_flats = {
+        name: np.ravel(field * hf * mymsk3d, order='F')
+        for name, field in term_fields.items()
+    }
+    
+    for i in range(nS - 1):
         ij = np.where((S_flat >= binmidS[i]) & (S_flat < binmidS[i + 1]))[0]
         Lijnew[0, i] = len(ij)
     
         if len(ij) > 0:
-            # MATLAB: dF_Tnew(4,i)=sum(ff.advh(ij)); dF_Tnew(5,i)=sum(ff.advr(ij));
-            dF_Snew[0, i] = np.nansum(ADVh_flat[ij])
-            dF_Snew[1, i] = np.nansum(ADVr_flat[ij])
-            dF_Snew[2, i] = np.nansum(DFh_flat[ij])
-            dF_Snew[3, i] = np.nansum(DFr_flat[ij])
-            dF_Snew[4, i] = np.nansum(surf_flat[ij])
-            dF_Snew[5, i] = np.nansum(kpp_flat[ij])
-            dF_Snew[6, i] = np.nansum(tend_flat[ij])
+            for it, name in enumerate(term_names):
+                dF_Snew[it, i] = np.nansum(term_flats[name][ij])
     
-    # MATLAB: G_T_offline_new = dF_Tnew ./ repmat(bbb.binwidthT1,[6 1])
     G_S_offline_new = dF_Snew / binwidthS1[None, :]
-
-    return Msum,dF_Snew
+    
+    dF_S_dict = {name: dF_Snew[it] for it, name in enumerate(term_names)}
+    G_S_dict  = {name: G_S_offline_new[it] for it, name in enumerate(term_names)}
+    
+    return Msum, dF_S_dict
 
 
 def create_TS_mesh(binned_theta, binned_salinity, attr, idxs, nT, nS, dT, dS):
