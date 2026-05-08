@@ -34,7 +34,7 @@ from binning import *                    # bin_array, create_mesh
 dirroot = "/scratch3/atnguyen/aste_90x150x60/"
 dirgrid = dirroot + "GRID_real8/"
 dirgridnb = dirroot + "GRID_noblank/"
-runstr= "run_c68v_heffmosm3x_layers_lessmem1_viscAHp5em2_it0000_pk0000000001/"
+runstr= "run_c68v_heffmosm3x_layers_lessmem1_viscAHp5em2_it0000_pk0000000001_r8_07May2026_pfe/"
 layers_path = dirroot + runstr
 extL = "LAYERS"
 dirmask = dirroot + "run_template/input_maskTransport/"
