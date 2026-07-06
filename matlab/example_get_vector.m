@@ -1,48 +1,144 @@
-%/scratch/atnguyen/aste_270x450x180/OFFICIAL_ASTE_R1_Sep2019/diags/TRSP/trsp_2d_set1.0000438048.meta
-%nDims = [   2 ];
-% dimList = [
-%    90,    1,   90,
-%  4050,    1, 4050
-% ];
-% dataprec = [ 'float32' ];
-% nrecords = [     8 ];
-% timeStepNumber = [     438048 ];
-% timeInterval = [  2.608848000000E+08  2.628288000000E+08 ];
-% missingValue = [ -9.99000000000000E+02 ];
-% nFlds = [    8 ];
-% fldList = {
-% 'DFxE_TH ' 'DFyE_TH ' 'ADVx_TH ' 'ADVy_TH ' 'DFxE_SLT' 'DFyE_SLT' 'ADVx_SLT' 'ADVy_SLT'
-% };
-clear all;
-nx=270;ncut1=450;ncut2=180;ny=2*ncut1+nx+ncut2;nfx=[nx 0 nx ncut2 ncut1];nfy=[ncut1 0 nx nx nx];nz=50;
+%EXAMPLE_GET_VECTOR Demonstrate compact ASTE vector conversion in MATLAB.
+%
+% This script reads one ASTE transport diagnostic record, reshapes U/V
+% components into the stitched ASTE domain, plots the result, and optionally
+% writes the converted arrays to binary files.
+%
+% Required helper functions on the MATLAB path:
+%   readbin, rdmds, writebin, get_aste_vector, sym_g_mod
 
+clearvars;
+close all;
 
-dirroot='/scratch/atnguyen/aste_270x450x180/';
-dirrun=[dirroot 'OFFICIAL_ASTE_R1_Sep2019/'];
-dirgrid=[dirroot 'GRID_real8/'];
+%% User configuration
 
-u=readbin([dirrun 'diags/TRSP/trsp_2d_set1.0000438048.data'],[nx ny],1,'real*4',2);%ADVx_TH (advective of theta ib x-dir)
-v=readbin([dirrun 'diags/TRSP/trsp_2d_set1.0000438048.data'],[nx ny],1,'real*4',3);%ADVy_TH
+nx = 270;
+ncut1 = 450;
+ncut2 = 180;
+nz = 50;
 
-[uaste,vaste]=get_aste_vector(u,v,nfx,nfy,1); %"1" at the end: takes care of sign, [541 901 1];
+dirroot = '/scratch/atnguyen/aste_270x450x180/';
+dirrun = fullfile(dirroot, 'OFFICIAL_ASTE_R1_Sep2019');
+dirgrid = fullfile(dirroot, 'GRID_real8');
+dirout = '/scratch/mmurakami/ASTE_270/';
 
-hfw=rdmds([dirgrid 'hFacW']);hfw=reshape(hfw,nx,ny,nz); %[270 1350 50]
-hfs=rdmds([dirgrid 'hFacS']);hfs=reshape(hfs,nx,ny,nz);
+transport_file = fullfile(dirrun, 'diags', 'TRSP', ...
+    'trsp_2d_set1.0000438048.data');
 
-[hfwaste,hfsaste]=get_aste_vector(hfw,hfs,nfx,nfy,0);   %[541 901 50]
+% readbin uses zero-based record offsets in the existing notebooks/helpers.
+theta_u_record = 2;  % ADVx_TH, third field in the metadata.
+theta_v_record = 3;  % ADVy_TH, fourth field in the metadata.
+write_output = true;
 
-dirout='/scratch/mmurakami/ASTE_270/';if(~exist(dirout));mkdir(dirout);end;
+%% ASTE grid dimensions
 
-figure(1);clf;colormap(seismic(21));
-subplot(2,3,1);hh=pcolor(1:541,1:901,uaste');shading flat;mycaxis(.3);mythincolorbar;grid;title('u');
-subplot(2,3,4);hh=pcolor(1:541,1:901,vaste');shading flat;mycaxis(.3);mythincolorbar;grid;title('v');
-subplot(2,3,2);hh=pcolor(1:541,1:901,hfwaste(:,:,1)');shading flat;mythincolorbar;grid;title('hfw(1)');
-subplot(2,3,5);hh=pcolor(1:541,1:901,hfsaste(:,:,1)');shading flat;mythincolorbar;grid;title('hfs(1)');
-subplot(2,3,3);hh=pcolor(1:541,1:901,hfwaste(:,:,30)');shading flat;mythincolorbar;grid;title('hfw(30)');
-subplot(2,3,5);hh=pcolor(1:541,1:901,hfsaste(:,:,30)');shading flat;mythincolorbar;grid;title('hfs(30)');
+ny = 2 * ncut1 + nx + ncut2;
+nfx = [nx, 0, nx, ncut2, ncut1];
+nfy = [ncut1, 0, nx, nx, nx];
 
-figure(1);set(gcf,'paperunit','inches','paperposition',[0 0 14 10]);
-fpr=[dirout 'test_get_aste_vector.png'];print(fpr,'-dpng');fprintf('%s\n',fpr);
+fprintf('Input compact size: [%d %d]\n', nx, ny);
+fprintf('Output ASTE vector size should be [%d %d]\n', ...
+    nfy(5) + nfx(1) + 1, nfy(1) + nfx(3) + nfx(4) + 1);
 
-foutu=[dirout 'uaste.bin'];writebin(foutu,uaste,1,'real*4');
-foutv=[dirout 'vaste.bin'];writebin(foutv,vaste,1,'real*4');
+%% Validate local files
+
+required_files = {
+    transport_file
+    fullfile(dirgrid, 'hFacW.data')
+    fullfile(dirgrid, 'hFacS.data')
+};
+
+for ifile = 1:numel(required_files)
+    if ~exist(required_files{ifile}, 'file')
+        error('Missing required file: %s', required_files{ifile});
+    end
+end
+
+if ~exist(dirout, 'dir')
+    mkdir(dirout);
+end
+
+%% Read and convert transport vectors
+
+u_compact = readbin(transport_file, [nx, ny], 1, 'real*4', theta_u_record);
+v_compact = readbin(transport_file, [nx, ny], 1, 'real*4', theta_v_record);
+
+% sign_switch = 1 applies vector sign/orientation changes.
+[u_aste, v_aste] = get_aste_vector(u_compact, v_compact, nfx, nfy, 1);
+
+%% Read and convert wet-cell masks
+
+hfacw = rdmds(fullfile(dirgrid, 'hFacW'));
+hfacw = reshape(hfacw, nx, ny, nz);
+
+hfacs = rdmds(fullfile(dirgrid, 'hFacS'));
+hfacs = reshape(hfacs, nx, ny, nz);
+
+% sign_switch = 0 keeps grid metrics/masks positive after rotation.
+[hfacw_aste, hfacs_aste] = get_aste_vector(hfacw, hfacs, nfx, nfy, 0);
+
+%% Plot a compact diagnostic figure
+
+figure(1);
+clf;
+colormap(seismic(21));
+
+subplot(2, 3, 1);
+pcolor(1:size(u_aste, 1), 1:size(u_aste, 2), u_aste');
+shading flat;
+colorbar;
+grid on;
+title('ADVx\_TH on ASTE domain');
+
+subplot(2, 3, 4);
+pcolor(1:size(v_aste, 1), 1:size(v_aste, 2), v_aste');
+shading flat;
+colorbar;
+grid on;
+title('ADVy\_TH on ASTE domain');
+
+subplot(2, 3, 2);
+pcolor(1:size(hfacw_aste, 1), 1:size(hfacw_aste, 2), hfacw_aste(:, :, 1)');
+shading flat;
+colorbar;
+grid on;
+title('hFacW level 1');
+
+subplot(2, 3, 5);
+pcolor(1:size(hfacs_aste, 1), 1:size(hfacs_aste, 2), hfacs_aste(:, :, 1)');
+shading flat;
+colorbar;
+grid on;
+title('hFacS level 1');
+
+subplot(2, 3, 3);
+pcolor(1:size(hfacw_aste, 1), 1:size(hfacw_aste, 2), hfacw_aste(:, :, 30)');
+shading flat;
+colorbar;
+grid on;
+title('hFacW level 30');
+
+subplot(2, 3, 6);
+pcolor(1:size(hfacs_aste, 1), 1:size(hfacs_aste, 2), hfacs_aste(:, :, 30)');
+shading flat;
+colorbar;
+grid on;
+title('hFacS level 30');
+
+set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0, 0, 14, 10]);
+figure_file = fullfile(dirout, 'test_get_aste_vector.png');
+print(figure_file, '-dpng');
+fprintf('Wrote figure: %s\n', figure_file);
+
+%% Optionally write converted arrays
+
+if write_output
+    u_file = fullfile(dirout, 'uaste.bin');
+    v_file = fullfile(dirout, 'vaste.bin');
+
+    writebin(u_file, u_aste, 1, 'real*4');
+    writebin(v_file, v_aste, 1, 'real*4');
+
+    fprintf('Wrote binary output: %s\n', u_file);
+    fprintf('Wrote binary output: %s\n', v_file);
+end

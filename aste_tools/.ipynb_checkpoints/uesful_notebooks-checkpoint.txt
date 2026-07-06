@@ -1,0 +1,56 @@
+Gateway differences as cross sections:
+/home/mmurakami/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Tracking_Atlantification/how_Atlantification
+
+Map view of various processes:
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Tracking_Atlantification/tracking_atlantification.ipynb
+
+Time series heat transport through the gates:
+/home/mmurakami/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Tracking_Atlantification/Arthun_2012.ipynb
+
+Time series for Lind:
+/home/mmurakami/crios_backups/ASTE_270/Pemberton_BarentsSpaper/ASTE_figs/ASTE_fig18_fig10.ipynb
+
+Time series for OHC/SI
+/home/mmurakami/crios_backups/ASTE_270/Pemberton_BarentsSpaper/ASTE_figs/
+
+Hovmoller differences a la Lind et al.
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Lind2018/Lind2018_fig1_crosssections.ipynb
+
+Vertical profiles of T and S:
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Lind2018/Lind_2018_replication.ipynb
+
+Water mass transformations in ASTE
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/BarentsS_paper/BarentsS_budget_breakdown.ipynb
+
+Trends in map view for the surface terms, AW presence and thickness
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Tracking_Atlantification/tracking_atlantification.ipynb
+
+Arthun OHT through the BSO
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Tracking_Atlantification/Arthun_2012_OHT_redone.ipynb
+
+Generate layers output (example)
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/presentation_fall_2025/lookatlayers_TS_2007.ipynb
+
+ID the Polar Front from Barton et al.
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/FullRundown_2years_3_26/Lind_PF_analysis.ipynb
+
+Load the full ASTE mass, heat, salt budgets
+/crios_backups/budgeting/regional_budgeting
+
+Nice colorbars from map and PF:
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Fullstory_BS_postOct1/budget_PF_mask.ipynb
+
+Validate miniaste gates:
+notebooks/crios_backups/ASTE_270/Pemberton_BarentsSpaper/2026_BarentsS/verify_gates_aste90.ipynb
+
+Polygon for WM definitions
+?
+
+Validate big ASTE gates:
+ASTE_270/Pemberton_BarentsSpaper/2026_BarentsS/copy_check_adv_closure.ipynb
+
+Velocity fields with scaling
+backups/ASTE_270/Pemberton_BarentsSpaper/2026_BarentsS/validate_all_pkg_layers_aste270/validate_alleqs_aste270.ipynb
+
+Breakdown of surface terms:
+/crios_backups/ASTE_270/Pemberton_BarentsSpaper/Tendencies_demo/surface_breakdown.ipynb

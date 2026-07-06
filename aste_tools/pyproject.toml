@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aste-tools"
+version = "0.1.0"
+description = "Reusable Python tools for ASTE grid, budget, transport, and T-S diagnostics."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+]
+
+[project.optional-dependencies]
+notebooks = [
+    "matplotlib",
+    "xarray",
+    "scipy",
+    "h5py",
+    "gsw",
+]
+test = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+include = ["aste_tools*"]
+
